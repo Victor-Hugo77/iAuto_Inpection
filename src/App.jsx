@@ -4,7 +4,7 @@ import {
   BoxSelect, Trash2, Plus, Pencil,
   Check, X, Layout, Eraser,
   Lock, Unlock, Settings, Save, Database, AlertTriangle, Eye,
-  ScanBarcode, ArrowRight, Camera, Car, Ruler
+  ScanBarcode, ArrowRight, ArrowLeft, Camera, Car, Ruler
 } from 'lucide-react';
 import { saveImage, getImagesByModel, deleteImagesByModel, clearAllImages, updateModelName, bulkInsertImages, deleteImagesByLabel } from './db';
 import { supabase } from './supabase';
