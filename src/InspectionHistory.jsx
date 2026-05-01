@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from './supabase';
-import { X, Calendar, Package, Check, AlertTriangle, Eye, Car } from 'lucide-react';
+import { X, Calendar, Package, Check, AlertTriangle, Eye, Car, Download } from 'lucide-react';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const InspectionHistory = ({ onClose }) => {
     const [inspections, setInspections] = useState([]);
@@ -32,6 +35,129 @@ const InspectionHistory = ({ onClose }) => {
         return new Date(dateString).toLocaleString('pt-BR');
     };
 
+    const [isExporting, setIsExporting] = useState(false);
+
+    const exportCSV = () => {
+        const headers = ['Data/Hora', 'Código', 'Modelo', 'Status'];
+        const csvContent = [
+            headers.join(','),
+            ...inspections.map(item => [
+                `"${formatDate(item.created_at)}"`,
+                `"${item.barcode}"`,
+                `"${item.model_name || '-'}"`,
+                `"${item.status}"`
+            ].join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute('download', 'historico_inspecoes.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const exportExcel = () => {
+        const wsData = inspections.map(item => ({
+            'Data / Hora': formatDate(item.created_at),
+            'Código (Barcode)': item.barcode,
+            'Modelo': item.model_name || '-',
+            'Status': item.status
+        }));
+        const ws = XLSX.utils.json_to_sheet(wsData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Histórico");
+        XLSX.writeFile(wb, "historico_inspecoes.xlsx");
+    };
+
+    const getBase64ImageFromUrl = async (imageUrl) => {
+        try {
+            const res = await fetch(imageUrl);
+            const blob = await res.blob();
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.addEventListener("load", function () {
+                    resolve(reader.result);
+                }, false);
+                reader.onerror = () => reject(this);
+                reader.readAsDataURL(blob);
+            });
+        } catch(e) {
+            return null;
+        }
+    };
+
+    const exportPDF = async () => {
+        setIsExporting(true);
+        try {
+            const doc = new jsPDF('p', 'pt', 'a4');
+            doc.setFontSize(16);
+            doc.text('Histórico de Inspeções - iAutomotivo', 40, 40);
+
+            const tableColumn = ["Data / Hora", "Código", "Modelo", "Status", "Evidência"];
+            const tableRows = [];
+
+            const processedData = await Promise.all(inspections.map(async (item) => {
+                let base64Img = null;
+                if (item.image_url) {
+                    if (item.image_url.startsWith('data:image')) {
+                        base64Img = item.image_url;
+                    } else {
+                        base64Img = await getBase64ImageFromUrl(item.image_url);
+                    }
+                }
+                return {
+                    date: formatDate(item.created_at),
+                    barcode: item.barcode,
+                    model: item.model_name || '-',
+                    status: item.status,
+                    image: base64Img
+                };
+            }));
+
+            processedData.forEach(item => {
+                const rowData = [
+                    item.date,
+                    item.barcode,
+                    item.model,
+                    item.status,
+                    item.image ? '' : 'Sem img'
+                ];
+                tableRows.push(rowData);
+            });
+
+            doc.autoTable({
+                startY: 50,
+                head: [tableColumn],
+                body: tableRows,
+                styles: { fontSize: 8, cellPadding: 2, valign: 'middle' },
+                columnStyles: {
+                    4: { cellWidth: 80, minCellHeight: 40 }
+                },
+                didDrawCell: (data) => {
+                    if (data.column.index === 4 && data.cell.section === 'body') {
+                        const imgData = processedData[data.row.index].image;
+                        if (imgData) {
+                            try {
+                                doc.addImage(imgData, 'JPEG', data.cell.x + 2, data.cell.y + 2, 76, 36);
+                            } catch(e) {
+                                console.error('Error drawing image in pdf', e);
+                            }
+                        }
+                    }
+                }
+            });
+
+            doc.save('historico_inspecoes.pdf');
+        } catch (error) {
+            console.error("Erro ao gerar PDF:", error);
+            alert("Ocorreu um erro ao gerar o PDF. Tente novamente.");
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
     return (
         <div className="fixed inset-0 z-[60] bg-slate-100/90 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-white w-full max-w-6xl h-[80vh] rounded-2xl border border-slate-200 shadow-2xl flex flex-col overflow-hidden">
@@ -41,12 +167,32 @@ const InspectionHistory = ({ onClose }) => {
                     <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                         <Package className="text-blue-600" /> Histórico de Inspeções
                     </h2>
-                    <button
-                        onClick={onClose}
-                        className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-500 hover:text-slate-800"
-                    >
-                        <X size={24} />
-                    </button>
+                    
+                    <div className="flex items-center gap-2">
+                        {/* Export Buttons */}
+                        <div className="flex gap-2 mr-4 pr-4 border-r border-slate-200">
+                            <button onClick={exportCSV} disabled={inspections.length === 0} className="px-3 py-1.5 bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 hover:text-slate-900 rounded-lg text-xs font-bold transition-colors shadow-sm flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <Download size={12} /> CSV
+                            </button>
+                            <button onClick={exportExcel} disabled={inspections.length === 0} className="px-3 py-1.5 bg-white border border-slate-300 text-green-700 hover:bg-green-50 hover:text-green-800 rounded-lg text-xs font-bold transition-colors shadow-sm flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <Download size={12} /> EXCEL
+                            </button>
+                            <button onClick={exportPDF} disabled={inspections.length === 0 || isExporting} className="px-3 py-1.5 bg-red-600 border border-red-700 text-white hover:bg-red-500 rounded-lg text-xs font-bold transition-colors shadow-sm flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed w-20 justify-center">
+                                {isExporting ? (
+                                    <span className="flex items-center gap-1"><span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span> PDF</span>
+                                ) : (
+                                    <><Download size={12} /> PDF</>
+                                )}
+                            </button>
+                        </div>
+
+                        <button
+                            onClick={onClose}
+                            className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-500 hover:text-slate-800"
+                        >
+                            <X size={24} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Content */}

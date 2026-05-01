@@ -11,10 +11,13 @@
   "dependencies": {
     "@tensorflow/tfjs": "^4.10.0",
     "dotenv": "^17.2.3",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.7",
     "lucide-react": "^0.292.0",
     "postgres": "^3.4.8",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",
