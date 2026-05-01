@@ -55,7 +55,6 @@ const App = () => {
   const [selectedDeviceId, setSelectedDeviceId] = useState('');
 
   // Modelo
-  const [currentModel, setCurrentModel] = useState('Polo'); // 'Polo' | 'Tera'
   const [currentProjectType, setCurrentProjectType] = useState('detection'); // 'detection' | 'metrology'
 
   // 'setup' | 'operator'
@@ -289,6 +288,8 @@ const App = () => {
       // Clear Local
       await deleteImagesByModel(selectedModel);
       if (modelsData.current[selectedModel]) delete modelsData.current[selectedModel];
+      localStorage.removeItem(`modelData:${selectedModel}`);
+      localStorage.removeItem(`smartinspector_regions_${selectedModel}`);
 
       await fetchModels();
       setSelectedModel(null);
@@ -357,27 +358,7 @@ const App = () => {
     }
   };
 
-  // Carregar Regiões quando o Modelo Mudar
-  useEffect(() => {
-    const loadRegions = () => {
-      const key = `smartinspector_regions_${currentModel}`;
-      try {
-        const saved = localStorage.getItem(key);
-        if (saved) {
-          setRegions(JSON.parse(saved));
-        } else {
-          setRegions([
-            { id: '1', name: 'Objeto 1', box: { x: 50, y: 50, w: 100, h: 100 }, samples: 0, status: null, confidence: 0 }
-          ]);
-        }
-      } catch (e) {
-        console.error("Erro ao carregar regioes:", e);
-        setRegions([{ id: '1', name: 'Objeto 1', box: { x: 50, y: 50, w: 100, h: 100 }, samples: 0, status: null, confidence: 0 }]);
-      }
-    };
-    loadRegions();
-  }, [currentModel]);
-
+  // (useEffect legado removido)
   // Salvar Regiões quando mudarem e atualizar Ref
   useEffect(() => {
     regionsRef.current = regions; // Restore Ref sync for canvas loop
