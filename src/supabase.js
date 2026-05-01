@@ -41,6 +41,10 @@ const createQuery = (tableName) => {
       data = data.filter(item => item[column] === value);
       return query;
     },
+    neq: (column, value) => {
+      data = data.filter(item => item[column] !== value);
+      return query;
+    },
     insert: (rows) => {
       const rowsArr = Array.isArray(rows) ? rows : [rows];
       const newRows = rowsArr.map(row => ({
@@ -68,14 +72,23 @@ const createQuery = (tableName) => {
         return Promise.resolve({ data: null, error: null });
       }
     }),
-    delete: () => ({
-      eq: (column, value) => {
-        const currentStore = getLocalStore();
-        currentStore[tableName] = (currentStore[tableName] || []).filter(item => item[column] !== value);
-        saveLocalStore(currentStore);
-        return Promise.resolve({ data: null, error: null });
-      }
-    }),
+    delete: () => {
+      const deleteQuery = {
+        eq: (column, value) => {
+          const currentStore = getLocalStore();
+          currentStore[tableName] = (currentStore[tableName] || []).filter(item => item[column] !== value);
+          saveLocalStore(currentStore);
+          return Promise.resolve({ data: null, error: null });
+        },
+        neq: (column, value) => {
+          const currentStore = getLocalStore();
+          currentStore[tableName] = (currentStore[tableName] || []).filter(item => item[column] === value);
+          saveLocalStore(currentStore);
+          return Promise.resolve({ data: null, error: null });
+        }
+      };
+      return deleteQuery;
+    },
     // Resolve quando o resultado é aguardado com await
     then: (resolve) => resolve({ data, error: null })
   };
