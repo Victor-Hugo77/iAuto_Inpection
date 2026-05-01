@@ -5,7 +5,7 @@ import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
-const InspectionHistory = ({ onClose }) => {
+const InspectionHistory = ({ onClose, onClear }) => {
     const [inspections, setInspections] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedImage, setSelectedImage] = useState(null);
@@ -42,6 +42,7 @@ const InspectionHistory = ({ onClose }) => {
 
                 if (error) throw error;
                 setInspections([]);
+                if (onClear) onClear(); // Sincroniza com o App.jsx
             } catch (error) {
                 console.error('Erro ao limpar histórico:', error);
                 alert('Ocorreu um erro ao limpar o histórico.');

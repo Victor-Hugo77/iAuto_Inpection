@@ -2371,7 +2371,12 @@ const App = () => {
         </p>
       </footer>
       {/* History Modal */}
-      {showHistory && <InspectionHistory onClose={() => setShowHistory(false)} />}
+      {showHistory && (
+        <InspectionHistory 
+          onClose={() => setShowHistory(false)} 
+          onClear={() => setHistory([])}
+        />
+      )}
     </div>
   );
 };
