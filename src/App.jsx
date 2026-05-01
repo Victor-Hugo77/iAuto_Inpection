@@ -1549,7 +1549,7 @@ const App = () => {
   if (!selectedModel) {
     if (isSyncing) {
       return (
-        <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center flex-col">
+        <div className="min-h-screen bg-slate-50 text-slate-900 flex items-center justify-center flex-col">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
           <h2 className="text-xl font-bold">{syncStatus}</h2>
         </div>
@@ -1557,11 +1557,11 @@ const App = () => {
     }
 
     return (
-      <div className="min-h-screen bg-slate-950 text-white font-sans flex items-center justify-center p-4">
+      <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex items-center justify-center p-4">
         {/* MODAL DE NOME DO MODELO */}
         {showNameModal && (
-          <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4">
-            <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 w-full max-w-md animate-in zoom-in-95 duration-200">
+          <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white border border-slate-200 rounded-2xl shadow-2xl p-6 w-full max-w-md animate-in zoom-in-95 duration-200">
               <h2 className="text-xl font-bold mb-4">Nome do novo modelo</h2>
               <input
                 type="text"
@@ -1569,14 +1569,14 @@ const App = () => {
                 value={newModelNameInput}
                 onChange={(e) => { setNewModelNameInput(e.target.value); setNameModalError(''); }}
                 onKeyDown={(e) => { if(e.key === 'Enter') submitNewModelName(); }}
-                className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 outline-none mb-2"
+                className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 outline-none mb-2"
                 placeholder="Ex: Polo"
               />
               {nameModalError && <p className="text-red-500 text-sm mb-4">{nameModalError}</p>}
               <div className="mt-6 flex justify-end gap-3">
                 <button
                   onClick={() => setShowNameModal(false)}
-                  className="text-slate-400 hover:text-white font-bold px-4 py-2"
+                  className="text-slate-500 hover:text-slate-900 font-bold px-4 py-2"
                 >
                   Cancelar
                 </button>
@@ -1593,40 +1593,40 @@ const App = () => {
 
         {/* MODAL DE TIPO DE PROJETO */}
         {showModelTypeModal && (
-          <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4">
-            <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 w-full max-w-md animate-in zoom-in-95 duration-200">
+          <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white border border-slate-200 rounded-2xl shadow-2xl p-6 w-full max-w-md animate-in zoom-in-95 duration-200">
               <h2 className="text-xl font-bold mb-2">Selecione o Modo</h2>
-              <p className="text-slate-400 text-sm mb-6">
-                Defina como o projeto <span className="font-bold text-white">"{pendingModelName}"</span> irá funcionar.
+              <p className="text-slate-500 text-sm mb-6">
+                Defina como o projeto <span className="font-bold text-slate-900">"{pendingModelName}"</span> irá funcionar.
               </p>
               
               <div className="space-y-3">
                 <button
                   onClick={() => confirmModelCreation('detection')}
-                  className="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-blue-500 p-4 rounded-xl text-left transition-all group"
+                  className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-blue-500 p-4 rounded-xl text-left transition-all group"
                 >
                   <div className="flex items-center gap-3 mb-1">
-                    <div className="p-2 bg-blue-500/20 text-blue-400 rounded-lg group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                    <div className="p-2 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors">
                       <BoxSelect size={20} />
                     </div>
-                    <span className="font-bold text-lg text-white">Detecção</span>
+                    <span className="font-bold text-lg text-slate-900">Detecção</span>
                   </div>
-                  <p className="text-slate-400 text-sm pl-11">
+                  <p className="text-slate-500 text-sm pl-11">
                     Selecione objetos na imagem para detecção.
                   </p>
                 </button>
 
                 <button
                   onClick={() => confirmModelCreation('metrology')}
-                  className="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-green-500 p-4 rounded-xl text-left transition-all group"
+                  className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-green-500 p-4 rounded-xl text-left transition-all group"
                 >
                   <div className="flex items-center gap-3 mb-1">
-                    <div className="p-2 bg-green-500/20 text-green-400 rounded-lg group-hover:bg-green-500 group-hover:text-white transition-colors">
+                    <div className="p-2 bg-green-50 text-green-600 rounded-lg group-hover:bg-green-500 group-hover:text-white transition-colors">
                       <Ruler size={20} />
                     </div>
-                    <span className="font-bold text-lg text-white">Medição</span>
+                    <span className="font-bold text-lg text-slate-900">Medição</span>
                   </div>
-                  <p className="text-slate-400 text-sm pl-11">
+                  <p className="text-slate-500 text-sm pl-11">
                     Utilize para realizar medições de peças.
                   </p>
                 </button>
@@ -1644,22 +1644,22 @@ const App = () => {
           </div>
         )}
 
-        <div className="max-w-md w-full bg-slate-900 rounded-2xl border border-slate-800 shadow-2xl p-8 text-center">
+        <div className="max-w-md w-full bg-white rounded-2xl border border-slate-200 shadow-2xl p-8 text-center">
           <div className="bg-blue-500/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
-            <h1 className="text-3xl font-black text-blue-500 italic">iAuto</h1>
+            <h1 className="text-3xl font-black text-blue-600 italic">iAuto</h1>
           </div>
-          <h1 className="text-2xl font-bold mb-2">iAuto Inspection</h1>
-          <p className="text-slate-400 mb-8">Escolha o veículo para carregar as configurações de inspeção.</p>
+          <h1 className="text-2xl font-bold mb-2 text-slate-900">iAuto Inspection</h1>
+          <p className="text-slate-500 mb-8">Escolha o veículo para carregar as configurações de inspeção.</p>
 
           <div className="space-y-3 max-h-96 overflow-y-auto">
             {availableModels.map(model => (
               <button
                 key={model.id}
                 onClick={() => handleStartScreenModelSelect(model.name)}
-                className="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-blue-500/50 p-4 rounded-xl flex items-center justify-between group transition-all"
+                className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-blue-500/50 p-4 rounded-xl flex items-center justify-between group transition-all"
               >
-                <span className="font-bold text-lg group-hover:text-blue-400 transition-colors uppercase">{model.name}</span>
-                <ArrowRight size={20} className="text-slate-600 group-hover:text-blue-500" />
+                <span className="font-bold text-lg group-hover:text-blue-600 transition-colors uppercase text-slate-800">{model.name}</span>
+                <ArrowRight size={20} className="text-slate-400 group-hover:text-blue-600" />
               </button>
             ))}
 
@@ -1786,11 +1786,11 @@ const App = () => {
 
   if (loadingError) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
-        <div className="bg-slate-900 p-8 rounded-2xl border border-red-900/50 max-w-md text-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-2xl border border-red-200 max-w-md text-center shadow-xl">
           <AlertTriangle size={48} className="text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-white mb-2">Erro de Inicialização</h2>
-          <p className="text-slate-400 mb-6">{loadingError}</p>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">Erro de Inicialização</h2>
+          <p className="text-slate-500 mb-6">{loadingError}</p>
           <button onClick={handleRetryCamera} className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-bold">
             Tentar Novamente
           </button>
@@ -1799,11 +1799,11 @@ const App = () => {
     );
   }
   return (
-    <div className="min-h-screen bg-slate-950 text-white font-sans flex flex-col h-screen overflow-hidden">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col h-screen overflow-hidden">
       {/* MODAL DE NOME DO MODELO (Reaproveitado na Sidebar) */}
       {showNameModal && (
-        <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 w-full max-w-md animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-2xl p-6 w-full max-w-md animate-in zoom-in-95 duration-200">
             <h2 className="text-xl font-bold mb-4">Nome do novo modelo</h2>
             <input
               type="text"
@@ -1811,14 +1811,14 @@ const App = () => {
               value={newModelNameInput}
               onChange={(e) => { setNewModelNameInput(e.target.value); setNameModalError(''); }}
               onKeyDown={(e) => { if(e.key === 'Enter') submitNewModelName(); }}
-              className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 outline-none mb-2"
+              className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 outline-none mb-2"
               placeholder="Ex: Polo"
             />
             {nameModalError && <p className="text-red-500 text-sm mb-4">{nameModalError}</p>}
             <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => setShowNameModal(false)}
-                className="text-slate-400 hover:text-white font-bold px-4 py-2"
+                className="text-slate-500 hover:text-slate-900 font-bold px-4 py-2"
               >
                 Cancelar
               </button>
@@ -1835,40 +1835,40 @@ const App = () => {
 
       {/* MODAL DE TIPO DE PROJETO (Reaproveitado na Sidebar) */}
       {showModelTypeModal && (
-        <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 w-full max-w-md animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-2xl p-6 w-full max-w-md animate-in zoom-in-95 duration-200">
             <h2 className="text-xl font-bold mb-2">Selecione o Modo</h2>
-            <p className="text-slate-400 text-sm mb-6">
-              Defina como o projeto <span className="font-bold text-white">"{pendingModelName}"</span> irá funcionar.
+            <p className="text-slate-500 text-sm mb-6">
+              Defina como o projeto <span className="font-bold text-slate-900">"{pendingModelName}"</span> irá funcionar.
             </p>
             
             <div className="space-y-3">
               <button
                 onClick={() => confirmModelCreation('detection')}
-                className="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-blue-500 p-4 rounded-xl text-left transition-all group"
+                className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-blue-500 p-4 rounded-xl text-left transition-all group"
               >
                 <div className="flex items-center gap-3 mb-1">
-                  <div className="p-2 bg-blue-500/20 text-blue-400 rounded-lg group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                  <div className="p-2 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors">
                     <BoxSelect size={20} />
                   </div>
-                  <span className="font-bold text-lg text-white">Detecção</span>
+                  <span className="font-bold text-lg text-slate-900">Detecção</span>
                 </div>
-                <p className="text-slate-400 text-sm pl-11">
+                <p className="text-slate-500 text-sm pl-11">
                   Selecione objetos na imagem para detecção.
                 </p>
               </button>
 
               <button
                 onClick={() => confirmModelCreation('metrology')}
-                className="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-green-500 p-4 rounded-xl text-left transition-all group"
+                className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-green-500 p-4 rounded-xl text-left transition-all group"
               >
                 <div className="flex items-center gap-3 mb-1">
-                  <div className="p-2 bg-green-500/20 text-green-400 rounded-lg group-hover:bg-green-500 group-hover:text-white transition-colors">
+                  <div className="p-2 bg-green-50 text-green-600 rounded-lg group-hover:bg-green-500 group-hover:text-white transition-colors">
                     <Ruler size={20} />
                   </div>
-                  <span className="font-bold text-lg text-white">Medição</span>
+                  <span className="font-bold text-lg text-slate-900">Medição</span>
                 </div>
-                <p className="text-slate-400 text-sm pl-11">
+                <p className="text-slate-500 text-sm pl-11">
                   Utilize para realizar medições de peças.
                 </p>
               </button>
@@ -1877,7 +1877,7 @@ const App = () => {
             <div className="mt-6 flex justify-end">
               <button
                 onClick={() => setShowModelTypeModal(false)}
-                className="text-slate-400 hover:text-white font-bold px-4 py-2"
+                className="text-slate-500 hover:text-slate-900 font-bold px-4 py-2"
               >
                 Cancelar
               </button>
@@ -1887,8 +1887,8 @@ const App = () => {
       )}
       {/* MODAL DE RENOMEAR MODELO */}
       {showRenameModal && (
-        <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 w-full max-w-md animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-2xl p-6 w-full max-w-md animate-in zoom-in-95 duration-200">
             <h2 className="text-xl font-bold mb-4">Renomear Modelo</h2>
             <input
               type="text"
@@ -1896,14 +1896,14 @@ const App = () => {
               value={renameModelInput}
               onChange={(e) => { setRenameModelInput(e.target.value); setRenameModalError(''); }}
               onKeyDown={(e) => { if (e.key === 'Enter') submitRenameModel(); }}
-              className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 outline-none mb-2"
+              className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 outline-none mb-2"
               placeholder="Novo nome"
             />
             {renameModalError && <p className="text-red-500 text-sm mb-4">{renameModalError}</p>}
             <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => setShowRenameModal(false)}
-                className="text-slate-400 hover:text-white font-bold px-4 py-2"
+                className="text-slate-500 hover:text-slate-900 font-bold px-4 py-2"
               >
                 Cancelar
               </button>
@@ -1919,10 +1919,10 @@ const App = () => {
       )}
 
       {/* Top Bar */}
-      <header className="h-14 border-b border-slate-800 flex items-center justify-between px-4 bg-slate-900 z-50">
+      <header className="h-14 border-b border-slate-200 flex items-center justify-between px-4 bg-white z-50">
         <div className="flex items-center gap-2">
-          <Layout className="text-blue-500" />
-          <h1 className="font-bold tracking-tight">iAuto <span className="text-blue-500 font-black italic">Inspection</span> <span className="text-slate-600 font-normal text-xs ml-2">v2.7 Stable</span></h1>
+          <Layout className="text-blue-600" />
+          <h1 className="font-bold tracking-tight text-slate-900">iAuto <span className="text-blue-600 font-black italic">Inspection</span> <span className="text-slate-400 font-normal text-xs ml-2">v2.7 Stable</span></h1>
         </div>
 
         <div className="flex gap-2">
@@ -1934,7 +1934,7 @@ const App = () => {
               setCurrentBarcode('');
             }}
             className={`px-3 py-1.5 rounded text-xs font-bold flex items-center gap-2 transition-colors
-                  ${viewMode === 'setup' ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20' : 'bg-blue-500/10 text-blue-500 border border-blue-500/20'}
+                  ${viewMode === 'setup' ? 'bg-yellow-50 text-yellow-600 border border-yellow-200' : 'bg-blue-50 text-blue-600 border border-blue-200'}
                `}
           >
             {viewMode === 'setup' ? <Unlock size={14} /> : <Lock size={14} />}
@@ -1946,8 +1946,8 @@ const App = () => {
       <div className="flex flex-1 overflow-hidden">
 
         {/* Câmera Area */}
-        <div className="flex-1 relative bg-black flex items-center justify-center overflow-hidden p-4">
-          <div className="relative w-full h-full max-w-5xl aspect-video rounded-lg overflow-hidden border border-slate-800 shadow-2xl">
+        <div className="flex-1 relative bg-slate-200 flex items-center justify-center overflow-hidden p-4">
+          <div className="relative w-full h-full max-w-5xl aspect-video rounded-lg overflow-hidden border border-slate-300 shadow-2xl">
             <video ref={videoRef} className="absolute w-full h-full object-contain opacity-70" muted playsInline />
             <canvas
               ref={canvasRef}
@@ -1960,20 +1960,20 @@ const App = () => {
 
             {/* --- TELA DE SCAN --- */}
             {viewMode === 'operator' && !currentBarcode && (
-              <div className="absolute inset-0 z-50 bg-slate-900/90 backdrop-blur-sm flex items-center justify-center">
-                <div className="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl w-full max-w-md text-center">
-                  <div className="bg-blue-500/20 p-4 rounded-full inline-block mb-4">
-                    <ScanBarcode size={48} className="text-blue-400" />
+              <div className="absolute inset-0 z-50 bg-white/90 backdrop-blur-sm flex items-center justify-center">
+                <div className="bg-slate-50 p-8 rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md text-center">
+                  <div className="bg-blue-50 p-4 rounded-full inline-block mb-4">
+                    <ScanBarcode size={48} className="text-blue-600" />
                   </div>
-                  <h2 className="text-2xl font-bold text-white mb-2">Iniciar Inspeção</h2>
-                  <p className="text-slate-400 mb-6">Escaneie o código de barras ou digite o ID.</p>
+                  <h2 className="text-2xl font-bold text-slate-900 mb-2">Iniciar Inspeção</h2>
+                  <p className="text-slate-500 mb-6">Escaneie o código de barras ou digite o ID.</p>
 
                   <form onSubmit={handleBarcodeSubmit}>
                     <input
                       ref={barcodeInputRef}
                       name="barcode"
                       autoComplete="off"
-                      className="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-3 text-xl text-center text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 outline-none mb-4 font-mono tracking-wider"
+                      className="w-full bg-white border border-slate-300 rounded-lg px-4 py-3 text-xl text-center text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 outline-none mb-4 font-mono tracking-wider"
                       placeholder="Aguardando..."
                     />
                     <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2">
@@ -1988,7 +1988,7 @@ const App = () => {
             {viewMode === 'operator' && currentBarcode && (
               <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30">
                 {regions.every(r => r.status === 'ok') ? (
-                  <div className="bg-green-500 text-white px-6 py-2 rounded-full font-bold shadow-lg flex items-center gap-2 animate-pulse">
+                  <div className="bg-green-600 text-white px-6 py-2 rounded-full font-bold shadow-lg flex items-center gap-2 animate-pulse">
                     <Check size={20} /> APROVADO
                   </div>
                 ) : (
@@ -2002,31 +2002,31 @@ const App = () => {
         </div>
 
         {/* Sidebar */}
-        <div className="w-80 bg-slate-900 border-l border-slate-800 flex flex-col z-40">
+        <div className="w-80 bg-white border-l border-slate-200 flex flex-col z-40">
 
           {/* MODO SETUP */}
           {viewMode === 'setup' && (
             <div className="flex flex-col h-full">
 
               {/* CONFIGURAÇÃO INICIAL */}
-              <div className="p-3 border-b border-slate-800 space-y-2">
+              <div className="p-3 border-b border-slate-200 space-y-2">
                 <div>
-                  <label className="text-[10px] text-slate-500 flex items-center gap-1 mb-1"><Camera size={10} /> Câmera</label>
-                  <select className="w-full bg-slate-800 text-white text-xs rounded p-1.5 border border-slate-700 outline-none" value={selectedDeviceId} onChange={handleCameraChange}>
+                  <label className="text-[10px] text-slate-400 flex items-center gap-1 mb-1"><Camera size={10} /> Câmera</label>
+                  <select className="w-full bg-slate-50 text-slate-900 text-xs rounded p-1.5 border border-slate-300 outline-none" value={selectedDeviceId} onChange={handleCameraChange}>
                     {videoDevices.map(d => (<option key={d.deviceId} value={d.deviceId}>{d.label || `Câmera ${d.deviceId.slice(0,5)}...`}</option>))}
                     {videoDevices.length === 0 && <option>Nenhuma câmera detectada</option>}
                   </select>
                 </div>
                 <div>
                   <div className="flex justify-between items-center mb-1">
-                    <label className="text-[10px] text-slate-500 flex items-center gap-1"><Car size={10} /> Modelo de Inspeção</label>
+                    <label className="text-[10px] text-slate-400 flex items-center gap-1"><Car size={10} /> Modelo de Inspeção</label>
                     <div className="flex gap-2">
-                      <button onClick={handleEditModel} title="Renomear" className="text-slate-500 hover:text-blue-400"><Pencil size={11} /></button>
-                      <button onClick={handleDeleteModel} title="Excluir" className="text-slate-500 hover:text-red-400"><Trash2 size={11} /></button>
-                      <button onClick={handleAddModel} className="text-[10px] text-blue-400 hover:text-blue-300 font-bold flex items-center gap-0.5"><Plus size={10} /> NOVO</button>
+                      <button onClick={handleEditModel} title="Renomear" className="text-slate-400 hover:text-blue-600"><Pencil size={11} /></button>
+                      <button onClick={handleDeleteModel} title="Excluir" className="text-slate-400 hover:text-red-600"><Trash2 size={11} /></button>
+                      <button onClick={handleAddModel} className="text-[10px] text-blue-600 hover:text-blue-500 font-bold flex items-center gap-0.5"><Plus size={10} /> NOVO</button>
                     </div>
                   </div>
-                  <select className="w-full bg-slate-800 text-white text-xs rounded p-1.5 border border-slate-700 outline-none" value={selectedModel || ''} onChange={(e) => handleModelSelect(e.target.value)}>
+                  <select className="w-full bg-slate-50 text-slate-900 text-xs rounded p-1.5 border border-slate-300 outline-none" value={selectedModel || ''} onChange={(e) => handleModelSelect(e.target.value)}>
                     {availableModels.map(m => (<option key={m.id} value={m.name}>{m.name}</option>))}
                   </select>
                 </div>
@@ -2035,7 +2035,7 @@ const App = () => {
               {/* GUIA DE TREINAMENTO */}
               <div className="flex-1 overflow-y-auto">
                 <div className="px-4 pt-3 pb-0">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Guia de Treinamento</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Guia de Treinamento</p>
                 </div>
 
                 {/* ① PASSO 1 */}
@@ -2043,40 +2043,40 @@ const App = () => {
                   <div className="flex items-start gap-2 mb-2">
                     <div className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0 mt-0.5">1</div>
                     <div>
-                      <p className="text-sm font-bold text-white leading-tight">Defina os pontos de inspeção</p>
-                      <p className="text-[10px] text-slate-400 mt-0.5">Posicione os quadrados sobre cada peça na câmera e dê um nome</p>
+                      <p className="text-sm font-bold text-slate-900 leading-tight">Defina os pontos de inspeção</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">Posicione os quadrados sobre cada peça na câmera e dê um nome</p>
                     </div>
                   </div>
                   <div className="space-y-1.5 pl-8">
                     {regions.map(r => (
                       <div key={r.id} onClick={() => setActiveRegionId(r.id)}
-                        className={`p-2 rounded border text-xs cursor-pointer relative group transition-all ${r.id === activeRegionId ? 'bg-blue-900/30 border-blue-500/60' : 'bg-slate-800/60 border-slate-700 hover:border-slate-600'}`}>
+                        className={`p-2 rounded border text-xs cursor-pointer relative group transition-all ${r.id === activeRegionId ? 'bg-blue-50 border-blue-200' : 'bg-slate-50 border-slate-200 hover:border-slate-300'}`}>
                         <div className="flex justify-between items-center">
-                          <input className="bg-transparent font-semibold text-white outline-none w-28 text-xs" value={r.name}
+                          <input className="bg-transparent font-semibold text-slate-900 outline-none w-28 text-xs" value={r.name}
                             onClick={e => e.stopPropagation()}
                             onChange={(e) => { const v = e.target.value; setRegions(prev => prev.map(reg => reg.id === r.id ? {...reg, name: v} : reg)); }} />
                           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onClick={(e) => { e.stopPropagation(); handleClearRegionSamples(r.id, r.name); }} className="text-slate-500 hover:text-orange-400" title="Limpar fotos"><Eraser size={11} /></button>
-                            <button onClick={(e) => { e.stopPropagation(); handleDeleteRegion(r.id); }} className="text-slate-500 hover:text-red-500" title="Excluir"><Trash2 size={11} /></button>
+                            <button onClick={(e) => { e.stopPropagation(); handleClearRegionSamples(r.id, r.name); }} className="text-slate-400 hover:text-orange-500" title="Limpar fotos"><Eraser size={11} /></button>
+                            <button onClick={(e) => { e.stopPropagation(); handleDeleteRegion(r.id); }} className="text-slate-400 hover:text-red-600" title="Excluir"><Trash2 size={11} /></button>
                           </div>
                         </div>
                       </div>
                     ))}
-                    <button onClick={addRegion} className="w-full py-1.5 border border-dashed border-slate-700 hover:border-blue-500/60 text-slate-500 hover:text-blue-400 text-xs rounded flex items-center justify-center gap-1 transition-all">
+                    <button onClick={addRegion} className="w-full py-1.5 border border-dashed border-slate-300 hover:border-blue-400 text-slate-400 hover:text-blue-600 text-xs rounded flex items-center justify-center gap-1 transition-all">
                       <Plus size={12} /> Adicionar Objeto
                     </button>
                   </div>
                 </div>
 
-                <div className="px-7 py-1"><div className="w-px h-4 bg-slate-700 ml-2.5"></div></div>
+                <div className="px-7 py-1"><div className="w-px h-4 bg-slate-200 ml-2.5"></div></div>
 
                 {/* ② PASSO 2 */}
                 <div className="px-4">
                   <div className="flex items-start gap-2 mb-2">
                     <div className="w-6 h-6 rounded-full bg-green-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0 mt-0.5">2</div>
                     <div>
-                      <p className="text-sm font-bold text-white leading-tight">Mostre peças <span className="text-green-400">APROVADAS</span></p>
-                      <p className="text-[10px] text-slate-400 mt-0.5">Posicione peças boas na câmera e grave pelo menos 5 fotos de cada</p>
+                      <p className="text-sm font-bold text-slate-900 leading-tight">Mostre peças <span className="text-green-600 font-black">APROVADAS</span></p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">Posicione peças boas na câmera e grave pelo menos 5 fotos de cada</p>
                     </div>
                   </div>
                   <div className="space-y-2 pl-8">
@@ -2084,16 +2084,16 @@ const App = () => {
                       const pct = Math.min(100, (r.samples / 5) * 100);
                       const done = r.samples >= 5;
                       return (
-                        <div key={r.id} className="bg-slate-800/60 border border-slate-700 rounded p-2.5">
+                        <div key={r.id} className="bg-slate-50 border border-slate-200 rounded p-2.5">
                           <div className="flex justify-between items-center mb-1.5">
-                            <span className="text-xs font-semibold text-slate-300 truncate max-w-[110px]">{r.name}</span>
-                            <span className={`text-[10px] font-bold ${done ? 'text-green-400' : 'text-slate-500'}`}>{r.samples}/5{done ? ' ✓' : ''}</span>
+                            <span className="text-xs font-semibold text-slate-700 truncate max-w-[110px]">{r.name}</span>
+                            <span className={`text-[10px] font-bold ${done ? 'text-green-600' : 'text-slate-400'}`}>{r.samples}/5{done ? ' ✓' : ''}</span>
                           </div>
-                          <div className="w-full h-1.5 bg-slate-700 rounded-full mb-2">
-                            <div className={`h-1.5 rounded-full transition-all duration-300 ${done ? 'bg-green-500' : 'bg-green-600/60'}`} style={{width: `${pct}%`}}></div>
+                          <div className="w-full h-1.5 bg-slate-200 rounded-full mb-2">
+                            <div className={`h-1.5 rounded-full transition-all duration-300 ${done ? 'bg-green-500' : 'bg-green-400/60'}`} style={{width: `${pct}%`}}></div>
                           </div>
                           <button onClick={() => { setActiveRegionId(r.id); addObjectExample(null, r.id); }}
-                            className="w-full py-1.5 rounded text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 bg-green-700/50 hover:bg-green-600 text-green-100 border border-green-700/40 hover:border-green-500">
+                            className="w-full py-1.5 rounded text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 hover:border-green-400">
                             <Eye size={12} /> Gravar Peça Aprovada
                           </button>
                         </div>
@@ -2102,28 +2102,28 @@ const App = () => {
                   </div>
                 </div>
 
-                <div className="px-7 py-1"><div className="w-px h-4 bg-slate-700 ml-2.5"></div></div>
+                <div className="px-7 py-1"><div className="w-px h-4 bg-slate-200 ml-2.5"></div></div>
 
                 {/* ③ PASSO 3 */}
                 <div className="px-4">
                   <div className="flex items-start gap-2 mb-2">
                     <div className="w-6 h-6 rounded-full bg-orange-500 text-white text-xs font-black flex items-center justify-center flex-shrink-0 mt-0.5">3</div>
                     <div>
-                      <p className="text-sm font-bold text-white leading-tight">Mostre o <span className="text-orange-400">FUNDO / Reprovadas</span></p>
-                      <p className="text-[10px] text-slate-400 mt-0.5">Campo vazio ou peças com defeito — grave pelo menos 5 fotos</p>
+                      <p className="text-sm font-bold text-slate-900 leading-tight">Mostre o <span className="text-orange-600 font-black">FUNDO / Reprovadas</span></p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">Campo vazio ou peças com defeito — grave pelo menos 5 fotos</p>
                     </div>
                   </div>
                   <div className="pl-8">
-                    <div className="bg-slate-800/60 border border-slate-700 rounded p-2.5">
+                    <div className="bg-slate-50 border border-slate-200 rounded p-2.5">
                       <div className="flex justify-between items-center mb-1.5">
-                        <span className="text-xs font-semibold text-slate-300">Fundo / Reprovado</span>
-                        <span className={`text-[10px] font-bold ${backgroundSamples >= 5 ? 'text-orange-400' : 'text-slate-500'}`}>{backgroundSamples}/5{backgroundSamples >= 5 ? ' ✓' : ''}</span>
+                        <span className="text-xs font-semibold text-slate-700">Fundo / Reprovado</span>
+                        <span className={`text-[10px] font-bold ${backgroundSamples >= 5 ? 'text-orange-600' : 'text-slate-400'}`}>{backgroundSamples}/5{backgroundSamples >= 5 ? ' ✓' : ''}</span>
                       </div>
-                      <div className="w-full h-1.5 bg-slate-700 rounded-full mb-2">
-                        <div className="h-1.5 rounded-full bg-orange-500/70 transition-all duration-300" style={{width: `${Math.min(100, (backgroundSamples / 5) * 100)}%`}}></div>
+                      <div className="w-full h-1.5 bg-slate-200 rounded-full mb-2">
+                        <div className="h-1.5 rounded-full bg-orange-500 transition-all duration-300" style={{width: `${Math.min(100, (backgroundSamples / 5) * 100)}%`}}></div>
                       </div>
                       <button onClick={addBackgroundExample}
-                        className="w-full py-1.5 rounded text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all bg-orange-600/70 hover:bg-orange-500 text-white border border-orange-600/40 hover:border-orange-400">
+                        className="w-full py-1.5 rounded text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 hover:border-orange-400">
                         <Eraser size={12} /> Gravar Fundo / Reprovado
                       </button>
                     </div>
@@ -2136,40 +2136,37 @@ const App = () => {
                   const bgDone = backgroundSamples >= 5;
                   const allReady = allObj && bgDone;
                   const partial = regions.every(r => r.samples >= 3) && backgroundSamples >= 3;
-                  if (allReady) return <div className="mx-4 mt-3 p-2.5 rounded-lg border bg-green-500/10 border-green-500/40 text-green-400 text-xs font-bold flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-green-400 animate-pulse flex-shrink-0"></div>✅ Pronto para produção!</div>;
-                  if (partial) return <div className="mx-4 mt-3 p-2.5 rounded-lg border bg-yellow-500/10 border-yellow-500/40 text-yellow-400 text-xs font-bold flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-yellow-400 flex-shrink-0"></div>⚠️ Treinamento mínimo — adicione mais fotos</div>;
-                  return <div className="mx-4 mt-3 p-2.5 rounded-lg border bg-slate-800 border-slate-700 text-slate-500 text-xs font-bold flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-slate-600 flex-shrink-0"></div>🔴 Complete o treinamento acima para iniciar</div>;
+                  if (allReady) return <div className="mx-4 mt-3 p-2.5 rounded-lg border bg-green-50 border-green-200 text-green-600 text-xs font-bold flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-green-500 animate-pulse flex-shrink-0"></div>✅ Pronto para produção!</div>;
+                  if (partial) return <div className="mx-4 mt-3 p-2.5 rounded-lg border bg-yellow-50 border-yellow-200 text-yellow-600 text-xs font-bold flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-yellow-500 flex-shrink-0"></div>⚠️ Treinamento mínimo — adicione mais fotos</div>;
+                  return <div className="mx-4 mt-3 p-2.5 rounded-lg border bg-slate-50 border-slate-200 text-slate-400 text-xs font-bold flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-slate-300 flex-shrink-0"></div>🔴 Complete o treinamento acima para iniciar</div>;
                 })()}
 
                 {isUnbalanced && (
-                  <div className="mx-4 mt-2 text-xs text-yellow-500 bg-yellow-500/10 p-2 rounded flex items-start gap-2">
+                  <div className="mx-4 mt-2 text-xs text-yellow-600 bg-yellow-50 p-2 rounded flex items-start gap-2 border border-yellow-100">
                     <AlertTriangle size={12} className="mt-0.5 flex-shrink-0" />
-                    <p>Equilibre as fotos de peças aprovadas e fundo.</p>
-                  </div>
-                )}
-                <div className="h-3"></div>
-              </div>
-
-              {/* RODAPÉ */}
-              <div className="border-t border-slate-800 p-3 space-y-2.5">
+                    <p>Equilibre               {/* RODAPÉ */}
+              <div className="border-t border-slate-200 p-3 space-y-2.5">
                 <div>
                   <div className="flex justify-between text-[10px] mb-1">
                     <span className="text-slate-500">Sensibilidade de detecção</span>
-                    <span className="text-blue-400 font-bold">{(threshold * 100).toFixed(0)}%</span>
+                    <span className="text-blue-600 font-bold">{(threshold * 100).toFixed(0)}%</span>
                   </div>
-                  <input type="range" min="0.5" max="0.99" step="0.01" value={threshold} onChange={(e) => setThreshold(parseFloat(e.target.value))} className="w-full accent-blue-500 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer" />
+                  <input type="range" min="0.5" max="0.99" step="0.01" value={threshold} onChange={(e) => setThreshold(parseFloat(e.target.value))} className="w-full accent-blue-600 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer" />
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => setShowHistory(true)} className="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-[10px] font-bold rounded border border-slate-700 flex items-center justify-center gap-1">
+                  <button onClick={() => setShowHistory(true)} className="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 text-[10px] font-bold rounded border border-slate-200 flex items-center justify-center gap-1">
                     <Database size={11} /> Histórico
                   </button>
                   {currentProjectType === 'metrology' && (
-                    <button onClick={() => setViewMode('calibration')} className="flex-1 py-1.5 bg-cyan-600/10 hover:bg-cyan-600/20 text-cyan-500 text-[10px] font-bold rounded border border-cyan-500/20 flex items-center justify-center gap-1">
+                    <button onClick={() => setViewMode('calibration')} className="flex-1 py-1.5 bg-cyan-50 hover:bg-cyan-100 text-cyan-600 text-[10px] font-bold rounded border border-cyan-200 flex items-center justify-center gap-1">
                       <Ruler size={11} /> Calibração
                     </button>
                   )}
                 </div>
-                <button onClick={handleDeleteAllPhotos} className="w-full py-1 text-slate-600 hover:text-red-500 text-[10px] flex items-center justify-center gap-1 transition-colors rounded hover:bg-red-500/5">
+                <button onClick={handleDeleteAllPhotos} className="w-full py-1 text-slate-400 hover:text-red-600 text-[10px] flex items-center justify-center gap-1 transition-colors rounded hover:bg-red-50">
+                  <Trash2 size={10} /> Excluir todas as fotos
+                </button>
+              </div>gap-1 transition-colors rounded hover:bg-red-500/5">
                   <Trash2 size={10} /> Excluir todas as fotos
                 </button>
               </div>
@@ -2178,73 +2175,73 @@ const App = () => {
 
           {/* MODO CALIBRATION */}
           {viewMode === 'calibration' && (
-            <div className="flex flex-col h-full bg-slate-900 border-l border-slate-800 text-slate-300">
-              <div className="p-4 border-b border-slate-800 bg-cyan-950/30">
-                <h2 className="font-bold text-cyan-400 flex items-center gap-2 mb-2">
+            <div className="flex flex-col h-full bg-white border-l border-slate-200 text-slate-600">
+              <div className="p-4 border-b border-slate-200 bg-cyan-50">
+                <h2 className="font-bold text-cyan-600 flex items-center gap-2 mb-2">
                   <Ruler size={18} /> Metrologia
                 </h2>
-                <p className="text-[10px] text-cyan-300/70">
+                <p className="text-[10px] text-cyan-700/70">
                   Defina 2 pontos de referência.
                 </p>
               </div>
 
               <div className="p-4 space-y-4">
-                <div className="bg-slate-800 p-3 rounded border border-slate-700">
-                  <h3 className="text-xs font-bold text-white mb-2 uppercase">1. Referência</h3>
+                <div className="bg-slate-50 p-3 rounded border border-slate-200">
+                  <h3 className="text-xs font-bold text-slate-800 mb-2 uppercase">1. Referência</h3>
                   <div className="flex gap-1 mb-2">
                     {Array(2).fill(0).map((_, i) => (
-                      <div key={i} className={`h-2 flex-1 rounded-full ${i < calibrationPoints.length ? 'bg-cyan-500' : 'bg-slate-700'}`}></div>
+                      <div key={i} className={`h-2 flex-1 rounded-full ${i < calibrationPoints.length ? 'bg-cyan-500' : 'bg-slate-200'}`}></div>
                     ))}
                   </div>
                   {calibrationPoints.length === 2 ? (
-                    <div className="text-xs text-green-400 font-bold flex items-center gap-1"><Check size={12} /> Pontos definidos</div>
+                    <div className="text-xs text-green-600 font-bold flex items-center gap-1"><Check size={12} /> Pontos definidos</div>
                   ) : (
-                    <div className="text-xs text-slate-500">Clique na imagem... ({calibrationPoints.length}/2)</div>
+                    <div className="text-xs text-slate-400">Clique na imagem... ({calibrationPoints.length}/2)</div>
                   )}
                 </div>
 
-                <div className="bg-slate-800 p-3 rounded border border-slate-700">
-                  <h3 className="text-xs font-bold text-white mb-2 uppercase">2. Distância Real</h3>
+                <div className="bg-slate-50 p-3 rounded border border-slate-200">
+                  <h3 className="text-xs font-bold text-slate-800 mb-2 uppercase">2. Distância Real</h3>
                   <div className="flex items-center gap-2 mb-3">
                     <input
                       type="number"
                       value={realDistanceInput}
                       onChange={(e) => setRealDistanceInput(e.target.value)}
                       placeholder="0"
-                      className="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white font-mono text-center outline-none focus:border-cyan-500"
+                      className="w-full bg-white border border-slate-300 rounded p-2 text-slate-900 font-mono text-center outline-none focus:border-cyan-500"
                     />
                     <span className="text-xs font-bold text-slate-400">mm</span>
                   </div>
                   <button
                     onClick={computeScaleFactor}
                     disabled={calibrationPoints.length !== 2 || !realDistanceInput}
-                    className="w-full py-2 bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold rounded text-xs transition-colors"
+                    className="w-full py-2 bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold rounded text-xs transition-colors"
                   >
                     DEFINIR ESCALA
                   </button>
                 </div>
 
                 {scaleFactor && (
-                  <div className="bg-green-900/20 border border-green-500/30 p-3 rounded text-center">
-                    <span className="text-[10px] text-green-400 font-bold block mb-1">CALIBRADO</span>
-                    <div className="text-xl font-mono text-white tracking-widest">
-                      {scaleFactor.toFixed(2)} <span className="text-xs text-green-500/70">px/mm</span>
+                  <div className="bg-green-50 border border-green-200 p-3 rounded text-center">
+                    <span className="text-[10px] text-green-600 font-bold block mb-1">CALIBRADO</span>
+                    <div className="text-xl font-mono text-slate-900 tracking-widest">
+                      {scaleFactor.toFixed(2)} <span className="text-xs text-green-600/70">px/mm</span>
                     </div>
                   </div>
                 )}
 
                 <button
                   onClick={resetCalibration}
-                  className="w-full py-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-300 font-bold rounded text-xs flex items-center justify-center gap-2"
+                  className="w-full py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 font-bold rounded text-xs flex items-center justify-center gap-2"
                 >
                   <Eraser size={14} /> LIMPAR TUDO
                 </button>
               </div>
 
-              <div className="mt-auto p-4 border-t border-slate-800">
+              <div className="mt-auto p-4 border-t border-slate-200">
                 <button
                   onClick={() => setViewMode('setup')}
-                  className="w-full py-3 bg-slate-800 text-slate-400 hover:text-white font-bold rounded text-xs transition-colors"
+                  className="w-full py-3 bg-slate-50 text-slate-400 hover:text-slate-800 font-bold rounded text-xs transition-colors"
                 >
                   VOLTAR
                 </button>
@@ -2254,9 +2251,9 @@ const App = () => {
 
           {/* MODO OPERADOR */}
           {viewMode === 'operator' && (
-            <div className="flex flex-col h-full">
-              <div className="p-4 bg-slate-800 border-b border-slate-700">
-                <h2 className="font-bold text-white mb-1 flex items-center gap-2"><Eye size={16} /> Inspeção Ativa</h2>
+            <div className="flex flex-col h-full bg-white text-slate-600">
+              <div className="p-4 bg-slate-50 border-b border-slate-200">
+                <h2 className="font-bold text-slate-900 mb-1 flex items-center gap-2"><Eye size={16} /> Inspeção Ativa</h2>
 
                 {/* Operator Camera Selector */}
                 <div className="mt-4 mb-4">
@@ -2264,7 +2261,7 @@ const App = () => {
                     <Camera size={12} /> Câmera
                   </label>
                   <select
-                    className="w-full bg-slate-900 text-white text-xs rounded p-2 border border-slate-600 outline-none focus:border-blue-500"
+                    className="w-full bg-white text-slate-900 text-xs rounded p-2 border border-slate-200 outline-none focus:border-blue-500"
                     value={selectedDeviceId}
                     onChange={handleCameraChange}
                   >
@@ -2278,36 +2275,36 @@ const App = () => {
                 </div>
 
                 {currentBarcode ? (
-                  <div className="mt-2 bg-slate-900 p-2 rounded border border-slate-600 flex justify-between items-center">
+                  <div className="mt-2 bg-white p-2 rounded border border-slate-200 flex justify-between items-center">
                     <span className="text-xs text-slate-400">Peça:</span>
-                    <span className="font-mono text-sm font-bold text-blue-400">{currentBarcode}</span>
+                    <span className="font-mono text-sm font-bold text-blue-600">{currentBarcode}</span>
                   </div>
                 ) : (
                   <p className="text-xs text-slate-400">Aguardando leitura...</p>
                 )}
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 opacity-90">
+              <div className="flex-1 overflow-y-auto p-4 opacity-90 bg-slate-50/50">
                 {currentBarcode && (
                   <>
-                    <h3 className="text-xs font-bold text-slate-500 uppercase mb-3 tracking-wider">Tempo Real</h3>
+                    <h3 className="text-xs font-bold text-slate-400 uppercase mb-3 tracking-wider">Tempo Real</h3>
                     <div className="space-y-3">
                       {regions.map(r => (
-                        <div key={r.id} className="bg-slate-800 p-3 rounded border border-slate-700">
+                        <div key={r.id} className="bg-white p-3 rounded border border-slate-200 shadow-sm">
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-slate-200">{r.name}</span>
+                            <span className="text-sm font-medium text-slate-700">{r.name}</span>
                             {r.status === 'ok' ? (
-                              <span className="text-[10px] font-bold text-green-400 bg-green-400/10 px-2 py-0.5 rounded border border-green-400/20">OK</span>
+                              <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded border border-green-200">OK</span>
                             ) : (
-                              <span className="text-[10px] font-bold text-red-400 bg-red-400/10 px-2 py-0.5 rounded border border-red-400/20">FALHA</span>
+                              <span className="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-200">FALHA</span>
                             )}
                           </div>
-                          <div className="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden relative">
+                          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden relative">
                             <div
                               className={`h-full transition-all duration-300 ${r.status === 'ok' ? 'bg-green-500' : 'bg-red-500'}`}
-                              style={{ width: `${(r.confidence * 100).toFixed(0)}%` }}
+                              style={{ width: `${((r.confidence || 0) * 100).toFixed(0)}%` }}
                             ></div>
-                            <div className="absolute top-0 bottom-0 w-0.5 bg-white opacity-50" style={{ left: `${threshold * 100}%` }}></div>
+                            <div className="absolute top-0 bottom-0 w-0.5 bg-blue-500 opacity-50" style={{ left: `${threshold * 100}%` }}></div>
                           </div>
                         </div>
                       ))}
@@ -2316,30 +2313,30 @@ const App = () => {
                 )}
               </div>
 
-              <div className="p-4 border-t border-slate-800 bg-slate-900 space-y-3">
+              <div className="p-4 border-t border-slate-200 bg-white space-y-3">
                 <button
                   onClick={saveToHistory}
                   disabled={!currentBarcode}
-                  className="w-full py-4 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 text-white rounded-lg font-bold shadow-lg flex justify-center items-center gap-2 active:scale-95 transition-transform"
+                  className="w-full py-4 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-100 disabled:text-slate-400 text-white rounded-lg font-bold shadow-lg flex justify-center items-center gap-2 active:scale-95 transition-transform"
                 >
                   <Save size={20} /> SALVAR & PRÓXIMO
                 </button>
 
-                <div className="pt-2 border-t border-slate-800">
-                  <h4 className="text-[10px] font-bold text-slate-500 uppercase mb-2 flex items-center gap-1">
+                <div className="pt-2 border-t border-slate-100">
+                  <h4 className="text-[10px] font-bold text-slate-400 uppercase mb-2 flex items-center gap-1">
                     <Database size={10} /> Histórico da Sessão
                   </h4>
                   <div className="space-y-1 max-h-32 overflow-y-auto">
                     {history.slice(0, 5).map(h => (
-                      <div key={h.id} className="text-xs flex items-center justify-between text-slate-400 bg-slate-800/50 p-1.5 rounded group hover:bg-slate-800 transition-colors">
+                      <div key={h.id} className="text-xs flex items-center justify-between text-slate-500 bg-slate-50 p-1.5 rounded group hover:bg-slate-100 transition-colors">
                         <div className="flex items-center gap-2">
-                          {h.image && <img src={h.image} alt="snap" className="w-6 h-6 rounded object-cover border border-slate-600" />}
+                          {h.image && <img src={h.image} alt="snap" className="w-6 h-6 rounded object-cover border border-slate-200" />}
                           <div className="flex flex-col">
-                            <span className="font-mono text-slate-300 font-bold">{h.code}</span>
+                            <span className="font-mono text-slate-600 font-bold">{h.code}</span>
                             <span className="text-[10px] opacity-70">{h.timestamp}</span>
                           </div>
                         </div>
-                        <span className={h.status === 'APROVADO' ? 'text-green-500 font-bold' : 'text-red-500 font-bold'}>{h.status}</span>
+                        <span className={h.status === 'APROVADO' ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>{h.status}</span>
                       </div>
                     ))}
                   </div>
