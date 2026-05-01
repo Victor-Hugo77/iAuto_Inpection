@@ -2144,7 +2144,13 @@ const App = () => {
                 {isUnbalanced && (
                   <div className="mx-4 mt-2 text-xs text-yellow-600 bg-yellow-50 p-2 rounded flex items-start gap-2 border border-yellow-100">
                     <AlertTriangle size={12} className="mt-0.5 flex-shrink-0" />
-                    <p>Equilibre               {/* RODAPÉ */}
+                    <p>Equilibre as fotos de peças aprovadas e fundo.</p>
+                  </div>
+                )}
+                <div className="h-3"></div>
+              </div>
+
+              {/* RODAPÉ */}
               <div className="border-t border-slate-200 p-3 space-y-2.5">
                 <div>
                   <div className="flex justify-between text-[10px] mb-1">
