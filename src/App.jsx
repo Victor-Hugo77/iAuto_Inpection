@@ -2166,9 +2166,6 @@ const App = () => {
                 <button onClick={handleDeleteAllPhotos} className="w-full py-1 text-slate-400 hover:text-red-600 text-[10px] flex items-center justify-center gap-1 transition-colors rounded hover:bg-red-50">
                   <Trash2 size={10} /> Excluir todas as fotos
                 </button>
-              </div>gap-1 transition-colors rounded hover:bg-red-500/5">
-                  <Trash2 size={10} /> Excluir todas as fotos
-                </button>
               </div>
             </div>
           )}
