@@ -1925,6 +1925,10 @@ const App = () => {
           <h1 className="font-bold tracking-tight text-slate-900">iAuto <span className="text-blue-600 font-black italic">Inspection</span> <span className="text-slate-400 font-normal text-xs ml-2">v2.7 Stable</span></h1>
         </div>
 
+        <div className="hidden md:block text-[10px] text-slate-400 font-medium">
+          Todos os direitos reservados o iAutomotivo - Por Daniel Miranda
+        </div>
+
         <div className="flex gap-2">
           <button
             onClick={() => {
@@ -2350,6 +2354,13 @@ const App = () => {
         </div>
 
       </div>
+
+      {/* Footer */}
+      <footer className="h-6 bg-white border-t border-slate-200 flex items-center justify-center px-4 z-50">
+        <p className="text-[9px] text-slate-400 font-medium">
+          Todos os direitos reservados o iAutomotivo - Por Daniel Miranda
+        </p>
+      </footer>
       {/* History Modal */}
       {showHistory && <InspectionHistory onClose={() => setShowHistory(false)} />}
     </div>
