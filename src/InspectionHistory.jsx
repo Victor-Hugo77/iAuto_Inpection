@@ -3,7 +3,7 @@ import { supabase } from './supabase';
 import { X, Calendar, Package, Check, AlertTriangle, Eye, Car, Download, Trash2 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 const InspectionHistory = ({ onClose, onClear }) => {
     const [inspections, setInspections] = useState([]);
@@ -148,7 +148,7 @@ const InspectionHistory = ({ onClose, onClear }) => {
                 tableRows.push(rowData);
             });
 
-            doc.autoTable({
+            autoTable(doc, {
                 startY: 50,
                 head: [tableColumn],
                 body: tableRows,
