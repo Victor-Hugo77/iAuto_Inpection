@@ -780,9 +780,8 @@ const App = () => {
                 newBgSamples++;
               } else {
                 classifier.current.addExample(activation, label);
-                // Extrai o ID da região do label
-                const regionId = label.includes('::') ? label.split('::')[1] : label;
-                sampleCounts[regionId] = (sampleCounts[regionId] || 0) + 1;
+                // Usa o label completo como chave no sampleCounts para não cruzar com outros modelos
+                sampleCounts[label] = (sampleCounts[label] || 0) + 1;
               }
               activation.dispose();
 
@@ -793,11 +792,13 @@ const App = () => {
 
           console.log(`Finalizado: ${newBgSamples} amostras de fundo carregadas.`);
 
-          // Atualizar contadores na UI
-          setRegions(prev => prev.map(r => ({
-            ...r,
-            samples: (sampleCounts[r.id] || 0)
-          })));
+          // Atualizar contadores na UI usando label completo para evitar colisão entre modelos
+          // O label é "NomeModelo::regionId" — extraímos regionId para casar com as regiões atuais
+          setRegions(prev => prev.map(r => {
+            const expectedLabel = `${selectedModel}::${r.id}`;
+            const count = sampleCounts[expectedLabel] || 0;
+            return { ...r, samples: count };
+          }));
           setBackgroundSamples(newBgSamples);
         }
 
@@ -1472,19 +1473,21 @@ const App = () => {
     const config = sourceData.config || sourceData; // Handle legacy structure where root was config
     const sourceRegions = sourceData.regions;
 
+    // Carrega regiões com samples=0 — os contadores corretos serão atualizados
+    // pelo useEffect loadLocalTrainingData que roda após selectedModel mudar
     const newRegions = (sourceRegions || []).map(r => ({
       id: r.id,
       name: r.name,
       box: { ...r.box },
-      samples: r.samples || 0,
+      samples: 0,  // SEMPRE inicia zerado; loadLocalTrainingData vai preencher
       status: null,
       confidence: 0
     }));
     setRegions(newRegions);
     if (newRegions.length > 0) setActiveRegionId(newRegions[0].id);
 
-    const bgSamples = sourceData.backgroundSamples != null ? sourceData.backgroundSamples : 0;
-    setBackgroundSamples(bgSamples);
+    // Zera background também — loadLocalTrainingData vai contar novamente
+    setBackgroundSamples(0);
 
     setViewMode('setup');
     setIsPredicting(false);
