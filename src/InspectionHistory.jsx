@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from './supabase';
-import { X, Calendar, Package, Check, AlertTriangle, Eye, Car, Download } from 'lucide-react';
+import { X, Calendar, Package, Check, AlertTriangle, Eye, Car, Download, Trash2 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -28,6 +28,26 @@ const InspectionHistory = ({ onClose }) => {
             console.error('Erro ao buscar histórico:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const clearHistory = async () => {
+        if (window.confirm('Tem certeza que deseja apagar TODO o histórico de inspeções? Esta ação não pode ser desfeita.')) {
+            setLoading(true);
+            try {
+                const { error } = await supabase
+                    .from('inspections')
+                    .delete()
+                    .neq('id', '00000000-0000-0000-0000-000000000000'); // Deleta tudo, assumindo UUIDs
+
+                if (error) throw error;
+                setInspections([]);
+            } catch (error) {
+                console.error('Erro ao limpar histórico:', error);
+                alert('Ocorreu um erro ao limpar o histórico.');
+            } finally {
+                setLoading(false);
+            }
         }
     };
 
@@ -183,6 +203,13 @@ const InspectionHistory = ({ onClose }) => {
                                 ) : (
                                     <><Download size={12} /> PDF</>
                                 )}
+                            </button>
+                        </div>
+                        
+                        {/* Clear History Button */}
+                        <div className="mr-4 pr-4 border-r border-slate-200">
+                            <button onClick={clearHistory} disabled={inspections.length === 0} className="px-3 py-1.5 bg-white border border-slate-300 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg text-xs font-bold transition-colors shadow-sm flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed" title="Apagar Todo o Histórico">
+                                <Trash2 size={12} /> LIMPAR HISTÓRICO
                             </button>
                         </div>
 
