@@ -46,7 +46,8 @@ const App = () => {
   const frameCountRef = useRef(0);
 
   // --- Estados ---
-  const [, setIsModelLoading] = useState(true);
+  const [isModelLoading, setIsModelLoading] = useState(true);
+  const [isAiReady, setIsAiReady] = useState(false);
   const [loadingError, setLoadingError] = useState(null);
   const [isCameraReady, setIsCameraReady] = useState(false);
 
@@ -518,6 +519,7 @@ const App = () => {
           console.log("Iniciando motor de inferência...");
           mobilenetModel.current = await window.mobilenet.load({ version: 2, alpha: 1.0 });
           setIsModelLoading(false);
+          setIsAiReady(true);
         } else {
           throw new Error('Err: Bibliotecas de IA falharam.');
         }
@@ -763,67 +765,125 @@ const App = () => {
     });
   };
 
+  const loadImage = (url) => {
+    return new Promise((resolve) => {
+      if (!url) return resolve(null);
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        if ('decode' in img) {
+          img.decode().then(() => resolve(img)).catch(() => resolve(img));
+        } else {
+          resolve(img);
+        }
+      };
+      img.onerror = (e) => {
+        console.warn("Falha ao carregar imagem de treino:", e);
+        resolve(null);
+      };
+      img.src = url;
+      if (img.complete && img.naturalWidth > 0) {
+        if ('decode' in img) {
+          img.decode().then(() => resolve(img)).catch(() => resolve(img));
+        } else {
+          resolve(img);
+        }
+      }
+    });
+  };
+
   // Carregar dados locais (IndexedDB)
   useEffect(() => {
     const loadLocalTrainingData = async () => {
       if (!classifier.current || !mobilenetModel.current || !selectedModel) return;
 
-      classifier.current.clearAllClasses();
-
       try {
-        // 1. Carregar Exemplos do Modelo (incluindo background) do IndexedDB
-        console.log(`Carregando dados locais do IndexedDB para: ${selectedModel}`);
+        console.log(`[IA] Sincronizando modelo e classificador para: ${selectedModel}`);
+        const stored = loadModelFromLocal(selectedModel);
+
+        // Se já tiver dataset serializado salvo, restaura com prioridade máxima
+        let datasetLoaded = false;
+        if (stored && stored.dataset) {
+          try {
+            const ds = deserializeDataset(stored.dataset);
+            if (ds) {
+              classifier.current.clearAllClasses();
+              classifier.current.setClassifierDataset(ds);
+              datasetLoaded = true;
+              console.log("[IA] Dataset serializado restaurado com sucesso!");
+            }
+          } catch (e) {
+            console.warn("[IA] Falha ao desserializar dataset em cache:", e);
+          }
+        }
 
         const modelData = await getImagesByModel(selectedModel);
 
         if (modelData && modelData.length > 0) {
-          console.log(`Carregado ${modelData.length} imagens de ${selectedModel} do IndexedDB`);
+          console.log(`[IA] Carregando ${modelData.length} imagens do IndexedDB para ${selectedModel}`);
           const sampleCounts = {};
           let newBgSamples = 0;
 
-          for (const row of modelData) {
-            try {
+          // Se o dataset não estava em cache ou foi resetado, reconstrói a partir das imagens
+          if (!datasetLoaded || classifier.current.getNumClasses() === 0) {
+            classifier.current.clearAllClasses();
+
+            for (const row of modelData) {
+              try {
+                const label = row.label;
+                if (!row.url) continue;
+
+                const img = await loadImage(row.url);
+                if (!img) continue;
+
+                const activation = mobilenetModel.current.infer(img, true);
+                const normalizedLabel = label.toLowerCase().trim();
+
+                if (normalizedLabel === 'background' || normalizedLabel.endsWith('::background')) {
+                  classifier.current.addExample(activation, 'background');
+                  newBgSamples++;
+                } else {
+                  classifier.current.addExample(activation, label);
+                  sampleCounts[label] = (sampleCounts[label] || 0) + 1;
+                }
+                activation.dispose();
+
+              } catch (err) {
+                console.error('Erro processando imagem de treino:', err);
+              }
+            }
+
+            // Salva dataset consolidado para os próximos acessos imediatos
+            if (classifier.current.getNumClasses() > 0) {
+              const ds = serializeDataset(classifier.current.getClassifierDataset());
+              if (!modelsData.current[selectedModel]) modelsData.current[selectedModel] = {};
+              modelsData.current[selectedModel].dataset = ds;
+              saveModelConfig(selectedModel);
+            }
+          } else {
+            // Se já carregou via dataset, apenas conta as amostras para a UI
+            for (const row of modelData) {
               const label = row.label;
-              if (!row.url) continue;
-
-              const img = new Image();
-              img.crossOrigin = 'anonymous';
-              img.src = row.url;
-              await new Promise((resolve) => {
-                img.onload = resolve;
-                img.onerror = resolve;
-              });
-
-              const activation = mobilenetModel.current.infer(img, true);
-
               const normalizedLabel = label.toLowerCase().trim();
-
               if (normalizedLabel === 'background' || normalizedLabel.endsWith('::background')) {
-                classifier.current.addExample(activation, 'background');
                 newBgSamples++;
               } else {
-                classifier.current.addExample(activation, label);
-                // Usa o label completo como chave no sampleCounts para não cruzar com outros modelos
                 sampleCounts[label] = (sampleCounts[label] || 0) + 1;
               }
-              activation.dispose();
-
-            } catch (err) {
-              console.error('Erro processando imagem de treino:', err);
             }
           }
 
-          console.log(`Finalizado: ${newBgSamples} amostras de fundo carregadas.`);
+          console.log(`[IA] Finalizado: ${classifier.current.getNumClasses()} classes ativas no KNN.`);
 
           // Atualizar contadores na UI preservando coordenadas das caixas
           setRegions(prev => prev.map(r => {
             const expectedLabel = `${selectedModel}::${r.id}`;
-            const count = sampleCounts[expectedLabel] || 0;
+            const count = sampleCounts[expectedLabel] !== undefined ? sampleCounts[expectedLabel] : r.samples;
             return { ...r, samples: count };
           }));
           setBackgroundSamples(newBgSamples);
         } else {
-          console.log(`Nenhuma imagem de treino encontrada no IndexedDB para ${selectedModel}`);
+          console.log(`[IA] Nenhuma imagem de treino encontrada no IndexedDB para ${selectedModel}`);
         }
 
       } catch (e) {
@@ -832,7 +892,7 @@ const App = () => {
     };
 
     loadLocalTrainingData();
-  }, [selectedModel]);
+  }, [selectedModel, isAiReady]);
 
   const captureCropBase64 = (box) => {
     if (!videoRef.current) return null;
@@ -881,13 +941,18 @@ const App = () => {
         prevRegions.map(r => r.id === regionIdToUse ? { ...r, samples: r.samples + 1 } : r)
       );
 
-      // Salvar Local
+      // Salva imagem no IndexedDB e atualiza dataset
       try {
         const imageBase64 = captureCropBase64(activeRegion.box);
         if (imageBase64 && selectedModel) {
           await saveImage(selectedModel, getClassLabel(activeRegion.id), imageBase64);
         }
-        console.log(`Imagem salva localmente com sucesso!`);
+        if (selectedModel && classifier.current) {
+          if (!modelsData.current[selectedModel]) modelsData.current[selectedModel] = {};
+          modelsData.current[selectedModel].dataset = serializeDataset(classifier.current.getClassifierDataset());
+          saveModelConfig(selectedModel);
+        }
+        console.log(`Imagem e dataset salvos localmente com sucesso!`);
       } catch (err) {
         console.error('Erro ao salvar imagem:', err);
       }
@@ -898,8 +963,6 @@ const App = () => {
     if (isPredicting || !classifier.current) return;
     let successCount = 0;
 
-    const modelId = getCurrentModelId();
-
     for (const region of regions) {
       const activation = getCropTensor(region.box);
       if (activation) {
@@ -909,7 +972,7 @@ const App = () => {
 
         try {
           const imageBase64 = captureCropBase64(region.box);
-          if (imageBase64) {
+          if (imageBase64 && selectedModel) {
             await saveImage(selectedModel, 'background', imageBase64);
           }
         } catch (err) {
@@ -917,21 +980,34 @@ const App = () => {
         }
       }
     }
-    if (successCount > 0) setBackgroundSamples(prev => prev + 1);
+    if (successCount > 0) {
+      setBackgroundSamples(prev => prev + 1);
+      if (selectedModel && classifier.current) {
+        if (!modelsData.current[selectedModel]) modelsData.current[selectedModel] = {};
+        modelsData.current[selectedModel].dataset = serializeDataset(classifier.current.getClassifierDataset());
+        saveModelConfig(selectedModel);
+      }
+    }
   };
 
   const predictAllRegions = async () => {
     if (!classifier.current || classifier.current.getNumClasses() === 0) return;
 
+    const classCounts = classifier.current.getClassExampleCount ? classifier.current.getClassExampleCount() : {};
+
     const updatedRegions = await Promise.all(regions.map(async (region) => {
-      if (region.samples === 0 && backgroundSamples === 0) return { ...region, status: null, confidence: 0 };
+      const label = getClassLabel(region.id);
+      const hasExamplesForRegion = (classCounts[label] && classCounts[label] > 0) || region.samples > 0;
+
+      if (!hasExamplesForRegion && backgroundSamples === 0) {
+        return { ...region, status: null, confidence: 0 };
+      }
 
       const activation = getCropTensor(region.box);
       if (!activation) return region;
 
       let resultStatus = 'bad';
       let conf = 0;
-      const label = getClassLabel(region.id);
 
       try {
         const result = await classifier.current.predictClass(activation);
@@ -945,9 +1021,6 @@ const App = () => {
           conf = result.confidences[label] || 0;
           resultStatus = 'bad';
         }
-
-        // Debug Log
-        // console.log(`Region: ${label}, Predicted: ${result.label}, Conf: ${conf}`);
 
       } catch (e) {
         console.log(e);
@@ -1001,6 +1074,7 @@ const App = () => {
       if (modelsData.current[selectedModel]) {
         modelsData.current[selectedModel].regions = defaultRegions;
         modelsData.current[selectedModel].backgroundSamples = 0;
+        modelsData.current[selectedModel].dataset = null;
       }
       await saveModelConfig(selectedModel);
 
