@@ -2034,7 +2034,7 @@ const App = () => {
         </div>
 
         <div className="hidden md:block text-[10px] text-slate-400 font-medium">
-          Todos os direitos reservados o iAutomotivo - Por Victor Hugo
+          Todos os direitos reservados o iAutomotivo - Por Victor Hugo & Daniel Miranda
         </div>
 
         <div className="flex gap-2">
@@ -2477,7 +2477,7 @@ const App = () => {
       {/* Footer */}
       <footer className="h-6 bg-white border-t border-slate-200 flex items-center justify-center px-4 z-50">
         <p className="text-[9px] text-slate-400 font-medium">
-          Todos os direitos reservados o iAutomotivo - Por Victor Hugo
+          Todos os direitos reservados o iAutomotivo - Por Victor Hugo & Daniel Miranda
         </p>
       </footer>
       {/* History Modal */}
