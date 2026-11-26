@@ -190,7 +190,7 @@ const App = () => {
       setNameModalError("Modelo já existe!");
       return;
     }
-    
+
     setShowNameModal(false);
     setPendingModelName(name);
     setShowModelTypeModal(true);
@@ -1663,7 +1663,7 @@ const App = () => {
                 autoFocus
                 value={newModelNameInput}
                 onChange={(e) => { setNewModelNameInput(e.target.value); setNameModalError(''); }}
-                onKeyDown={(e) => { if(e.key === 'Enter') submitNewModelName(); }}
+                onKeyDown={(e) => { if (e.key === 'Enter') submitNewModelName(); }}
                 className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 outline-none mb-2"
                 placeholder="Ex: Polo"
               />
@@ -1694,7 +1694,7 @@ const App = () => {
               <p className="text-slate-500 text-sm mb-6">
                 Defina como o projeto <span className="font-bold text-slate-900">"{pendingModelName}"</span> irá funcionar.
               </p>
-              
+
               <div className="space-y-3">
                 <button
                   onClick={() => confirmModelCreation('detection')}
@@ -1909,7 +1909,7 @@ const App = () => {
               autoFocus
               value={newModelNameInput}
               onChange={(e) => { setNewModelNameInput(e.target.value); setNameModalError(''); }}
-              onKeyDown={(e) => { if(e.key === 'Enter') submitNewModelName(); }}
+              onKeyDown={(e) => { if (e.key === 'Enter') submitNewModelName(); }}
               className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-3 text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 outline-none mb-2"
               placeholder="Ex: Polo"
             />
@@ -1940,7 +1940,7 @@ const App = () => {
             <p className="text-slate-500 text-sm mb-6">
               Defina como o projeto <span className="font-bold text-slate-900">"{pendingModelName}"</span> irá funcionar.
             </p>
-            
+
             <div className="space-y-3">
               <button
                 onClick={() => confirmModelCreation('detection')}
@@ -2020,7 +2020,7 @@ const App = () => {
       {/* Top Bar */}
       <header className="h-14 border-b border-slate-200 flex items-center justify-between px-4 bg-white z-50">
         <div className="flex items-center gap-4">
-          <button 
+          <button
             onClick={() => window.history.back()}
             className="p-2 hover:bg-slate-100 rounded-full text-slate-500 hover:text-slate-900 transition-colors"
             title="Voltar para a página anterior"
@@ -2034,7 +2034,7 @@ const App = () => {
         </div>
 
         <div className="hidden md:block text-[10px] text-slate-400 font-medium">
-          Todos os direitos reservados o iAutomotivo - Por Daniel Miranda
+          Todos os direitos reservados o iAutomotivo - Por Victor Hugo
         </div>
 
         <div className="flex gap-2">
@@ -2125,7 +2125,7 @@ const App = () => {
                 <div>
                   <label className="text-[11px] text-slate-600 font-bold flex items-center gap-1 mb-1"><Camera size={10} /> Câmera</label>
                   <select className="w-full bg-white text-slate-900 text-xs rounded p-1.5 border border-slate-400 outline-none focus:ring-2 focus:ring-blue-500/20" value={selectedDeviceId} onChange={handleCameraChange}>
-                    {videoDevices.map(d => (<option key={d.deviceId} value={d.deviceId}>{d.label || `Câmera ${d.deviceId.slice(0,5)}...`}</option>))}
+                    {videoDevices.map(d => (<option key={d.deviceId} value={d.deviceId}>{d.label || `Câmera ${d.deviceId.slice(0, 5)}...`}</option>))}
                     {videoDevices.length === 0 && <option>Nenhuma câmera detectada</option>}
                   </select>
                 </div>
@@ -2169,7 +2169,7 @@ const App = () => {
                             onChange={(e) => {
                               const v = e.target.value;
                               setRegions(prev => {
-                                const updated = prev.map(reg => reg.id === r.id ? {...reg, name: v} : reg);
+                                const updated = prev.map(reg => reg.id === r.id ? { ...reg, name: v } : reg);
                                 if (selectedModel) {
                                   if (!modelsData.current[selectedModel]) modelsData.current[selectedModel] = {};
                                   modelsData.current[selectedModel].regions = updated;
@@ -2213,7 +2213,7 @@ const App = () => {
                             <span className={`text-[10px] font-black ${done ? 'text-green-700' : 'text-slate-500'}`}>{r.samples}/5{done ? ' ✓' : ''}</span>
                           </div>
                           <div className="w-full h-2 bg-slate-200 rounded-full mb-2 border border-slate-300">
-                            <div className={`h-full rounded-full transition-all duration-300 ${done ? 'bg-green-600' : 'bg-green-500/40'}`} style={{width: `${pct}%`}}></div>
+                            <div className={`h-full rounded-full transition-all duration-300 ${done ? 'bg-green-600' : 'bg-green-500/40'}`} style={{ width: `${pct}%` }}></div>
                           </div>
                           <button onClick={() => { setActiveRegionId(r.id); addObjectExample(null, r.id); }}
                             className="w-full py-2 rounded text-xs font-black flex items-center justify-center gap-1.5 transition-all active:scale-95 bg-green-50 hover:bg-green-100 text-green-800 border border-green-300 hover:border-green-500 shadow-sm">
@@ -2243,7 +2243,7 @@ const App = () => {
                         <span className={`text-[10px] font-black ${backgroundSamples >= 5 ? 'text-orange-700' : 'text-slate-500'}`}>{backgroundSamples}/5{backgroundSamples >= 5 ? ' ✓' : ''}</span>
                       </div>
                       <div className="w-full h-2 bg-slate-200 rounded-full mb-2 border border-slate-300">
-                        <div className="h-full rounded-full bg-orange-600 transition-all duration-300" style={{width: `${Math.min(100, (backgroundSamples / 5) * 100)}%`}}></div>
+                        <div className="h-full rounded-full bg-orange-600 transition-all duration-300" style={{ width: `${Math.min(100, (backgroundSamples / 5) * 100)}%` }}></div>
                       </div>
                       <button onClick={addBackgroundExample}
                         className="w-full py-2 rounded text-xs font-black flex items-center justify-center gap-1.5 active:scale-95 transition-all bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-300 hover:border-orange-500 shadow-sm">
@@ -2477,13 +2477,13 @@ const App = () => {
       {/* Footer */}
       <footer className="h-6 bg-white border-t border-slate-200 flex items-center justify-center px-4 z-50">
         <p className="text-[9px] text-slate-400 font-medium">
-          Todos os direitos reservados o iAutomotivo - Por Daniel Miranda
+          Todos os direitos reservados o iAutomotivo - Por Victor Hugo
         </p>
       </footer>
       {/* History Modal */}
       {showHistory && (
-        <InspectionHistory 
-          onClose={() => setShowHistory(false)} 
+        <InspectionHistory
+          onClose={() => setShowHistory(false)}
           onClear={() => setHistory([])}
         />
       )}
