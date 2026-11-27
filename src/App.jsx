@@ -46,8 +46,7 @@ const App = () => {
   const frameCountRef = useRef(0);
 
   // --- Estados ---
-  const [isModelLoading, setIsModelLoading] = useState(true);
-  const [isAiReady, setIsAiReady] = useState(false);
+  const [, setIsModelLoading] = useState(true);
   const [loadingError, setLoadingError] = useState(null);
   const [isCameraReady, setIsCameraReady] = useState(false);
 
@@ -146,19 +145,7 @@ const App = () => {
         .from('models')
         .select('*')
         .order('name', { ascending: true });
-      const loadedModels = data || [];
-      setAvailableModels(loadedModels);
-
-      // Auto-restaurar último modelo selecionado antes do F5
-      if (!selectedModel) {
-        const lastActive = localStorage.getItem('smartinspector_active_model');
-        if (lastActive) {
-          const found = loadedModels.find(m => m.name === lastActive);
-          if (found) {
-            handleStartScreenModelSelect(lastActive, found);
-          }
-        }
-      }
+      setAvailableModels(data || []);
     } catch (e) {
       console.error("Erro ao buscar modelos:", e);
     }
@@ -168,9 +155,8 @@ const App = () => {
   const isSwitchingRef = useRef(false);
 
   // Helper to get current model ID
-  const getCurrentModelId = (name = null) => {
-    const targetName = name || selectedModel;
-    const found = availableModels.find(m => m.name === targetName);
+  const getCurrentModelId = () => {
+    const found = availableModels.find(m => m.name === selectedModel);
     return found ? found.id : null;
   };
 
@@ -304,7 +290,6 @@ const App = () => {
       if (modelsData.current[selectedModel]) delete modelsData.current[selectedModel];
       localStorage.removeItem(`modelData:${selectedModel}`);
       localStorage.removeItem(`smartinspector_regions_${selectedModel}`);
-      localStorage.removeItem('smartinspector_active_model');
 
       await fetchModels();
       setSelectedModel(null);
@@ -340,14 +325,10 @@ const App = () => {
     return result;
   };
 
-  const saveModelConfig = async (modelName, configOverride = null) => {
+  const saveModelConfig = async (modelName) => {
     if (!modelName) return;
-    const currentConfig = configOverride || modelsData.current[modelName];
+    const currentConfig = modelsData.current[modelName];
     if (!currentConfig) return;
-
-    if (!currentConfig.type && currentProjectTypeRef.current) {
-      currentConfig.type = currentProjectTypeRef.current;
-    }
 
     // Salvar na localStorage (persistente)
     try {
@@ -356,11 +337,8 @@ const App = () => {
       console.error("Erro saving config to localStorage:", e);
     }
 
-    // Atualiza estado local de availableModels para que qualquer leitor tenha o config mais recente
-    setAvailableModels(prev => prev.map(m => m.name === modelName ? { ...m, config: { ...m.config, ...currentConfig } } : m));
-
     // Atualizar o mock local
-    const modelId = getCurrentModelId(modelName);
+    const modelId = getCurrentModelId();
     if (modelId) {
       try {
         await supabase.from('models').update({ config: currentConfig }).eq('id', modelId);
@@ -519,7 +497,6 @@ const App = () => {
           console.log("Iniciando motor de inferência...");
           mobilenetModel.current = await window.mobilenet.load({ version: 2, alpha: 1.0 });
           setIsModelLoading(false);
-          setIsAiReady(true);
         } else {
           throw new Error('Err: Bibliotecas de IA falharam.');
         }
@@ -565,14 +542,15 @@ const App = () => {
       box: { x: 50, y: 50, w: 150, h: 150 },
       samples: 0, status: null, confidence: 0
     };
-    const updated = [...regions, newRegion];
-    setRegions(updated);
+    setRegions(prev => {
+      const updated = [...prev, newRegion];
+      if (selectedModel && modelsData.current[selectedModel]) {
+        modelsData.current[selectedModel].regions = updated.map(r => ({ ...r, box: { ...r.box } }));
+      }
+      return updated;
+    });
     setActiveRegionId(newId);
-    if (selectedModel) {
-      if (!modelsData.current[selectedModel]) modelsData.current[selectedModel] = {};
-      modelsData.current[selectedModel].regions = updated.map(r => ({ ...r, box: { ...r.box } }));
-      saveModelConfig(selectedModel);
-    }
+    if (selectedModel) saveModelConfig(selectedModel);
   };
 
   /* --- Delete Region (Full Cleanup) --- */
@@ -765,125 +743,72 @@ const App = () => {
     });
   };
 
-  const loadImage = (url) => {
-    return new Promise((resolve) => {
-      if (!url) return resolve(null);
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        if ('decode' in img) {
-          img.decode().then(() => resolve(img)).catch(() => resolve(img));
-        } else {
-          resolve(img);
-        }
-      };
-      img.onerror = (e) => {
-        console.warn("Falha ao carregar imagem de treino:", e);
-        resolve(null);
-      };
-      img.src = url;
-      if (img.complete && img.naturalWidth > 0) {
-        if ('decode' in img) {
-          img.decode().then(() => resolve(img)).catch(() => resolve(img));
-        } else {
-          resolve(img);
-        }
-      }
-    });
-  };
-
   // Carregar dados locais (IndexedDB)
   useEffect(() => {
+    // Quando o modelo muda (ou o componente desmonta), o carregamento anterior é cancelado.
+    // Sem isso, o carregamento do modelo ANTERIOR continuava rodando em segundo plano e, ao terminar,
+    // colocava as fotos e os contadores dele dentro do modelo novo.
+    let cancelled = false;
+
     const loadLocalTrainingData = async () => {
       if (!classifier.current || !mobilenetModel.current || !selectedModel) return;
 
-      try {
-        console.log(`[IA] Sincronizando modelo e classificador para: ${selectedModel}`);
-        const stored = loadModelFromLocal(selectedModel);
+      classifier.current.clearAllClasses();
 
-        // Se já tiver dataset serializado salvo, restaura com prioridade máxima
-        let datasetLoaded = false;
-        if (stored && stored.dataset) {
-          try {
-            const ds = deserializeDataset(stored.dataset);
-            if (ds) {
-              classifier.current.clearAllClasses();
-              classifier.current.setClassifierDataset(ds);
-              datasetLoaded = true;
-              console.log("[IA] Dataset serializado restaurado com sucesso!");
-            }
-          } catch (e) {
-            console.warn("[IA] Falha ao desserializar dataset em cache:", e);
-          }
-        }
+      try {
+        // 1. Carregar Exemplos do Modelo (incluindo background)
+        console.log(`Carregando dados locais para: ${selectedModel}`);
 
         const modelData = await getImagesByModel(selectedModel);
+        if (cancelled) return;
 
-        if (modelData && modelData.length > 0) {
-          console.log(`[IA] Carregando ${modelData.length} imagens do IndexedDB para ${selectedModel}`);
+        if (modelData) {
+          console.log(`Carregado ${modelData.length} imagens de ${selectedModel}`);
           const sampleCounts = {};
           let newBgSamples = 0;
 
-          // Se o dataset não estava em cache ou foi resetado, reconstrói a partir das imagens
-          if (!datasetLoaded || classifier.current.getNumClasses() === 0) {
-            classifier.current.clearAllClasses();
-
-            for (const row of modelData) {
-              try {
-                const label = row.label;
-                if (!row.url) continue;
-
-                const img = await loadImage(row.url);
-                if (!img) continue;
-
-                const activation = mobilenetModel.current.infer(img, true);
-                const normalizedLabel = label.toLowerCase().trim();
-
-                if (normalizedLabel === 'background' || normalizedLabel.endsWith('::background')) {
-                  classifier.current.addExample(activation, 'background');
-                  newBgSamples++;
-                } else {
-                  classifier.current.addExample(activation, label);
-                  sampleCounts[label] = (sampleCounts[label] || 0) + 1;
-                }
-                activation.dispose();
-
-              } catch (err) {
-                console.error('Erro processando imagem de treino:', err);
-              }
-            }
-
-            // Salva dataset consolidado para os próximos acessos imediatos
-            if (classifier.current.getNumClasses() > 0) {
-              const ds = serializeDataset(classifier.current.getClassifierDataset());
-              if (!modelsData.current[selectedModel]) modelsData.current[selectedModel] = {};
-              modelsData.current[selectedModel].dataset = ds;
-              saveModelConfig(selectedModel);
-            }
-          } else {
-            // Se já carregou via dataset, apenas conta as amostras para a UI
-            for (const row of modelData) {
+          for (const row of modelData) {
+            if (cancelled) return;
+            try {
               const label = row.label;
+              if (!row.url) continue;
+
+              const img = new Image();
+              img.crossOrigin = 'anonymous';
+              img.src = row.url;
+              await new Promise((resolve) => { img.onload = resolve; img.onerror = resolve; });
+              if (cancelled) return;
+
+              const activation = mobilenetModel.current.infer(img, true);
+
               const normalizedLabel = label.toLowerCase().trim();
-              if (normalizedLabel === 'background' || normalizedLabel.endsWith('::background')) {
+
+              if (normalizedLabel === 'background') {
+                classifier.current.addExample(activation, 'background');
                 newBgSamples++;
               } else {
+                classifier.current.addExample(activation, label);
+                // Usa o label completo como chave no sampleCounts para não cruzar com outros modelos
                 sampleCounts[label] = (sampleCounts[label] || 0) + 1;
               }
+              activation.dispose();
+
+            } catch (err) {
+              console.error('Erro processando imagem:', err);
             }
           }
 
-          console.log(`[IA] Finalizado: ${classifier.current.getNumClasses()} classes ativas no KNN.`);
+          if (cancelled) return;
+          console.log(`Finalizado: ${newBgSamples} amostras de fundo carregadas.`);
 
-          // Atualizar contadores na UI preservando coordenadas das caixas
+          // Atualizar contadores na UI usando label completo para evitar colisão entre modelos
+          // O label é "NomeModelo::regionId" — extraímos regionId para casar com as regiões atuais
           setRegions(prev => prev.map(r => {
             const expectedLabel = `${selectedModel}::${r.id}`;
-            const count = sampleCounts[expectedLabel] !== undefined ? sampleCounts[expectedLabel] : r.samples;
+            const count = sampleCounts[expectedLabel] || 0;
             return { ...r, samples: count };
           }));
           setBackgroundSamples(newBgSamples);
-        } else {
-          console.log(`[IA] Nenhuma imagem de treino encontrada no IndexedDB para ${selectedModel}`);
         }
 
       } catch (e) {
@@ -892,7 +817,8 @@ const App = () => {
     };
 
     loadLocalTrainingData();
-  }, [selectedModel, isAiReady]);
+    return () => { cancelled = true; };
+  }, [selectedModel]);
 
   const captureCropBase64 = (box) => {
     if (!videoRef.current) return null;
@@ -941,18 +867,13 @@ const App = () => {
         prevRegions.map(r => r.id === regionIdToUse ? { ...r, samples: r.samples + 1 } : r)
       );
 
-      // Salva imagem no IndexedDB e atualiza dataset
+      // Salvar Local
       try {
         const imageBase64 = captureCropBase64(activeRegion.box);
         if (imageBase64 && selectedModel) {
           await saveImage(selectedModel, getClassLabel(activeRegion.id), imageBase64);
         }
-        if (selectedModel && classifier.current) {
-          if (!modelsData.current[selectedModel]) modelsData.current[selectedModel] = {};
-          modelsData.current[selectedModel].dataset = serializeDataset(classifier.current.getClassifierDataset());
-          saveModelConfig(selectedModel);
-        }
-        console.log(`Imagem e dataset salvos localmente com sucesso!`);
+        console.log(`Imagem salva localmente com sucesso!`);
       } catch (err) {
         console.error('Erro ao salvar imagem:', err);
       }
@@ -963,6 +884,8 @@ const App = () => {
     if (isPredicting || !classifier.current) return;
     let successCount = 0;
 
+    const modelId = getCurrentModelId();
+
     for (const region of regions) {
       const activation = getCropTensor(region.box);
       if (activation) {
@@ -972,7 +895,7 @@ const App = () => {
 
         try {
           const imageBase64 = captureCropBase64(region.box);
-          if (imageBase64 && selectedModel) {
+          if (imageBase64) {
             await saveImage(selectedModel, 'background', imageBase64);
           }
         } catch (err) {
@@ -980,34 +903,21 @@ const App = () => {
         }
       }
     }
-    if (successCount > 0) {
-      setBackgroundSamples(prev => prev + 1);
-      if (selectedModel && classifier.current) {
-        if (!modelsData.current[selectedModel]) modelsData.current[selectedModel] = {};
-        modelsData.current[selectedModel].dataset = serializeDataset(classifier.current.getClassifierDataset());
-        saveModelConfig(selectedModel);
-      }
-    }
+    if (successCount > 0) setBackgroundSamples(prev => prev + 1);
   };
 
   const predictAllRegions = async () => {
     if (!classifier.current || classifier.current.getNumClasses() === 0) return;
 
-    const classCounts = classifier.current.getClassExampleCount ? classifier.current.getClassExampleCount() : {};
-
     const updatedRegions = await Promise.all(regions.map(async (region) => {
-      const label = getClassLabel(region.id);
-      const hasExamplesForRegion = (classCounts[label] && classCounts[label] > 0) || region.samples > 0;
-
-      if (!hasExamplesForRegion && backgroundSamples === 0) {
-        return { ...region, status: null, confidence: 0 };
-      }
+      if (region.samples === 0 && backgroundSamples === 0) return { ...region, status: null, confidence: 0 };
 
       const activation = getCropTensor(region.box);
       if (!activation) return region;
 
       let resultStatus = 'bad';
       let conf = 0;
+      const label = getClassLabel(region.id);
 
       try {
         const result = await classifier.current.predictClass(activation);
@@ -1021,6 +931,9 @@ const App = () => {
           conf = result.confidences[label] || 0;
           resultStatus = 'bad';
         }
+
+        // Debug Log
+        // console.log(`Region: ${label}, Predicted: ${result.label}, Conf: ${conf}`);
 
       } catch (e) {
         console.log(e);
@@ -1074,7 +987,6 @@ const App = () => {
       if (modelsData.current[selectedModel]) {
         modelsData.current[selectedModel].regions = defaultRegions;
         modelsData.current[selectedModel].backgroundSamples = 0;
-        modelsData.current[selectedModel].dataset = null;
       }
       await saveModelConfig(selectedModel);
 
@@ -1532,10 +1444,8 @@ const App = () => {
 
   const handleModelSelect = (modelName) => {
     isSwitchingRef.current = true;
-    if (selectedModel && selectedModel !== modelName) saveModelConfig(selectedModel);
+    if (selectedModel) saveModelConfig(selectedModel);
     setSelectedModel(modelName);
-    localStorage.setItem('smartinspector_active_model', modelName);
-
     const stored = loadModelFromLocal(modelName);
     if (classifier.current) {
       classifier.current.clearAllClasses();
@@ -1553,51 +1463,62 @@ const App = () => {
       backgroundSamples: 0
     };
 
+    // Config salva do modelo na lista (banco). O <select> da barra lateral chama esta função
+    // diretamente, então ela precisa ler a config salva aqui. Sem isso, um modelo que ainda não
+    // foi aberto nesta sessão abria com o objeto padrão e SOBRESCREVIA os objetos que estavam salvos.
     const modelFromList = availableModels.find(m => m.name === modelName);
-    const listConfig = modelFromList?.config || {};
+    const listConfig = modelFromList?.config || null;
+    const listHasRegions = !!(listConfig && Array.isArray(listConfig.regions) && listConfig.regions.length > 0);
+
+    // Prioridade: 1. localStorage  2. memória  3. config salva no banco  4. estrutura padrão
+    const sourceData = stored
+      || modelsData.current[modelName]
+      || (listHasRegions ? listConfig : null)
+      || defaultStructure;
 
     // Detect Project Type from Config
-    const detectedType = stored?.type || listConfig?.type || modelsData.current[modelName]?.type || 'detection';
-    setCurrentProjectType(detectedType);
-
-    // Carrega regiões priorizando localStorage (mais recente após edições), depois Supabase, depois memória
-    let sourceRegions = [];
-    if (stored && Array.isArray(stored.regions) && stored.regions.length > 0) {
-      sourceRegions = stored.regions;
-    } else if (listConfig && Array.isArray(listConfig.regions) && listConfig.regions.length > 0) {
-      sourceRegions = listConfig.regions;
-    } else if (modelsData.current[modelName] && Array.isArray(modelsData.current[modelName].regions) && modelsData.current[modelName].regions.length > 0) {
-      sourceRegions = modelsData.current[modelName].regions;
-    } else {
-      sourceRegions = defaultStructure.regions;
+    let projectType = 'detection';
+    if (sourceData.type) {
+      projectType = sourceData.type;
+    } else if (sourceData.config && sourceData.config.type) {
+      projectType = sourceData.config.type; // Legacy/nested
+    } else if (listConfig && listConfig.type) {
+      projectType = listConfig.type;
     }
+    setCurrentProjectType(projectType);
 
-    const newRegions = sourceRegions.map(r => ({
+    // Load config (regions, etc)
+    const sourceRegions = sourceData.regions || (sourceData.config && sourceData.config.regions);
+
+    // Carrega regiões com samples=0 — os contadores corretos serão atualizados
+    // pelo useEffect loadLocalTrainingData que roda após selectedModel mudar
+    const newRegions = (sourceRegions || []).map(r => ({
       id: r.id,
       name: r.name,
       box: { ...r.box },
-      samples: r.samples || 0,
+      samples: 0,  // SEMPRE inicia zerado; loadLocalTrainingData vai preencher
       status: null,
       confidence: 0
     }));
-
     setRegions(newRegions);
     if (newRegions.length > 0) setActiveRegionId(newRegions[0].id);
 
-    // Atualiza modelsData com a configuração consolidada
-    modelsData.current[modelName] = {
-      type: detectedType,
-      regions: newRegions.map(r => ({ ...r, box: { ...r.box } })),
-      backgroundSamples: stored?.backgroundSamples || listConfig?.backgroundSamples || 0,
-      dataset: null
-    };
+    // Zera background também — loadLocalTrainingData vai contar novamente
+    setBackgroundSamples(0);
 
-    setBackgroundSamples(modelsData.current[modelName].backgroundSamples);
+    // Registra o modelo na memória já com tipo e objetos corretos. Antes, o efeito que salva as
+    // regiões criava um {} vazio para o modelo, e o salvamento seguinte apagava o "type" e os objetos.
+    modelsData.current[modelName] = {
+      ...(modelsData.current[modelName] || {}),
+      type: projectType,
+      regions: newRegions,
+      backgroundSamples: 0
+    };
 
     setViewMode('setup');
     setIsPredicting(false);
     setCurrentBarcode('');
-    setTimeout(() => { isSwitchingRef.current = false; }, 50);
+    setTimeout(() => { isSwitchingRef.current = false; }, 0);
   };
 
   /* --- Local Loading --- */
@@ -1615,16 +1536,10 @@ const App = () => {
       const projectType = config.type || 'detection';
       setCurrentProjectType(projectType);
 
-      // Prioriza configuração salva localmente caso já existam edições de caixas/ROIs
-      const stored = loadModelFromLocal(modelName);
-      const effectiveRegions = (stored && Array.isArray(stored.regions) && stored.regions.length > 0)
-        ? stored.regions
-        : (config.regions || []);
-
       modelsData.current[modelName] = {
         type: projectType,
-        regions: effectiveRegions,
-        backgroundSamples: stored?.backgroundSamples || config.backgroundSamples || 0,
+        regions: config.regions || [],
+        backgroundSamples: config.backgroundSamples || 0,
         dataset: null
       };
 
@@ -1875,11 +1790,7 @@ const App = () => {
   const handleMouseUp = () => {
     if (interactionMode !== 'none') {
       setInteractionMode('none');
-      if (selectedModel) {
-        if (!modelsData.current[selectedModel]) modelsData.current[selectedModel] = {};
-        modelsData.current[selectedModel].regions = regionsRef.current.map(r => ({ ...r, box: { ...r.box } }));
-        saveModelConfig(selectedModel);
-      }
+      if (selectedModel) saveModelConfig(selectedModel);
     }
   };
 
@@ -2034,7 +1945,7 @@ const App = () => {
         </div>
 
         <div className="hidden md:block text-[10px] text-slate-400 font-medium">
-          Todos os direitos reservados o iAutomotivo - Por Victor Hugo & Daniel Miranda
+          Todos os direitos reservados o iAutomotivo - Por Daniel Miranda
         </div>
 
         <div className="flex gap-2">
@@ -2166,18 +2077,7 @@ const App = () => {
                         <div className="flex justify-between items-center">
                           <input className="bg-transparent font-bold text-slate-900 outline-none w-28 text-xs" value={r.name}
                             onClick={e => e.stopPropagation()}
-                            onChange={(e) => {
-                              const v = e.target.value;
-                              setRegions(prev => {
-                                const updated = prev.map(reg => reg.id === r.id ? { ...reg, name: v } : reg);
-                                if (selectedModel) {
-                                  if (!modelsData.current[selectedModel]) modelsData.current[selectedModel] = {};
-                                  modelsData.current[selectedModel].regions = updated;
-                                  saveModelConfig(selectedModel);
-                                }
-                                return updated;
-                              });
-                            }} />
+                            onChange={(e) => { const v = e.target.value; setRegions(prev => prev.map(reg => reg.id === r.id ? { ...reg, name: v } : reg)); }} />
                           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button onClick={(e) => { e.stopPropagation(); handleClearRegionSamples(r.id, r.name); }} className="text-slate-500 hover:text-orange-600" title="Limpar fotos"><Eraser size={11} /></button>
                             <button onClick={(e) => { e.stopPropagation(); handleDeleteRegion(r.id); }} className="text-slate-500 hover:text-red-700" title="Excluir"><Trash2 size={11} /></button>
@@ -2477,7 +2377,7 @@ const App = () => {
       {/* Footer */}
       <footer className="h-6 bg-white border-t border-slate-200 flex items-center justify-center px-4 z-50">
         <p className="text-[9px] text-slate-400 font-medium">
-          Todos os direitos reservados o iAutomotivo - Por Victor Hugo & Daniel Miranda
+          Todos os direitos reservados o iAutomotivo - Por Daniel Miranda
         </p>
       </footer>
       {/* History Modal */}
